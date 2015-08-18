@@ -19,5 +19,6 @@ dependencies {
     compile "org.slf4j:slf4j-api:1.7.12"
     compile "org.scala-lang:scala-library-all:2.11.7"
     compile "com.typesafe.akka:akka-actor_2.11:2.3.9"
+    compile "com.typesafe.akka:akka-slf4j_2.11:2.3.9"
     testCompile 'junit:junit:4.12'
 }

@@ -11,7 +11,6 @@ import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-
 public class Main {
     public static void main(String[] args) {
         Logger logger = LoggerFactory.getLogger(Main.class.getName());
@@ -28,7 +27,7 @@ public class Main {
                 logger.error("Could not load properties file: " + propertiesFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not load properties file: " + propertiesFile, e);
         }
 
         // Create the 'helloakka' actor system
@@ -49,19 +48,16 @@ public class Main {
 
         // Wait 5 seconds for the reply with the 'greeting' message
         Greeting greeting1 = (Greeting) inbox.receive(Duration.create(5, TimeUnit.SECONDS));
-        System.out.println("Greeting: " + greeting1.message);
+        logger.info("Greeting: " + greeting1.message);
 
         // Change the greeting and ask for it again
         greeter.tell(new WhoToGreet("typesafe"), ActorRef.noSender());
         inbox.send(greeter, new Greet());
         Greeting greeting2 = (Greeting) inbox.receive(Duration.create(5, TimeUnit.SECONDS));
-        System.out.println("Greeting: " + greeting2.message);
-
-        // after zero seconds, send a Greet message every second to the greeter with a sender of the GreetPrinter
-        ActorRef greetPrinter = system.actorOf(Props.create(GreetPrinter.class));
-        system.scheduler().schedule(Duration.Zero(), Duration.create(1, TimeUnit.SECONDS), greeter, new Greet(), system.dispatcher(), greetPrinter);
+        logger.info("Greeting: " + greeting2.message);
 
         logger.info("Finished Initialization");
+        system.shutdown();
     }
 
     public static class Greet implements Serializable {
@@ -98,10 +94,4 @@ public class Main {
         }
     }
 
-    public static class GreetPrinter extends UntypedActor {
-        public void onReceive(Object message) {
-            if (message instanceof Greeting)
-                System.out.println(((Greeting) message).message);
-        }
-    }
 }
