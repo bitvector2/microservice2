@@ -1,20 +1,14 @@
 package org.bitvector.microservice2;
 
-import akka.actor.*;
-import io.undertow.Handlers;
-import io.undertow.Undertow;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.RoutingHandler;
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.concurrent.duration.Duration;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
@@ -29,108 +23,16 @@ public class Main {
                 props.load(resourceStream);
                 System.setProperties(props);
             } else {
-                // you don't have to have a config file so defaults everywhere...
                 logger.error("Could not load properties file: " + propertiesFile);
             }
         } catch (IOException e) {
             logger.error("Could not load properties file: " + propertiesFile, e);
-            System.exit(1);
         }
 
-        RoutingHandler fooHandler = Handlers.routing()
-                .get("/foo", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseSender().send("GET foo");
-                    }
-                })
-                .put("/foo", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseSender().send("PUT foo");
-                    }
-                })
-                .post("/foo", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseSender().send("POST foo");
-                    }
-                })
-                .delete("/foo", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseSender().send("DELETE foo");
-                    }
-                });
-
-        Undertow server = Undertow.builder()
-                .addHttpListener(8080, "localhost")
-                .setHandler(fooHandler)
-                .build();
-        server.start();
-
-
-        // Create the 'helloakka' actor system
-        final ActorSystem system = ActorSystem.create("helloakka");
-
-        // Create the 'greeter' actor
-        final ActorRef greeter = system.actorOf(Props.create(Greeter.class), "greeter");
-
-        // Create the "actor-in-a-box"
-        final Inbox inbox = Inbox.create(system);
-
-        // Tell the 'greeter' to change its 'greeting' message
-        greeter.tell(new WhoToGreet("akka"), ActorRef.noSender());
-
-        // Ask the 'greeter for the latest 'greeting'
-        // Reply should go to the "actor-in-a-box"
-        inbox.send(greeter, new Greet());
-
-        // Wait 5 seconds for the reply with the 'greeting' message
-        Greeting greeting1 = (Greeting) inbox.receive(Duration.create(5, TimeUnit.SECONDS));
-        logger.info("Greeting: " + greeting1.message);
-
-        // Change the greeting and ask for it again
-        greeter.tell(new WhoToGreet("typesafe"), ActorRef.noSender());
-        inbox.send(greeter, new Greet());
-        Greeting greeting2 = (Greeting) inbox.receive(Duration.create(5, TimeUnit.SECONDS));
-        logger.info("Greeting: " + greeting2.message);
+        ActorSystem system = ActorSystem.create("TheTheatre");
+        ActorRef httpActor = system.actorOf(Props.create(HttpActor.class), "HttpActor");
+        httpActor.tell(new HttpActor.Start(), ActorRef.noSender());
 
         logger.info("Finished Initialization");
     }
-
-    public static class Greet implements Serializable {
-    }
-
-    public static class WhoToGreet implements Serializable {
-        public final String who;
-
-        public WhoToGreet(String who) {
-            this.who = who;
-        }
-    }
-
-    public static class Greeting implements Serializable {
-        public final String message;
-
-        public Greeting(String message) {
-            this.message = message;
-        }
-    }
-
-    public static class Greeter extends UntypedActor {
-        String greeting = "";
-
-        public void onReceive(Object message) {
-            if (message instanceof WhoToGreet)
-                greeting = "hello, " + ((WhoToGreet) message).who;
-
-            else if (message instanceof Greet)
-                // Send the current greeting back to the sender
-                getSender().tell(new Greeting(greeting), getSelf());
-
-            else unhandled(message);
-        }
-    }
-
 }
