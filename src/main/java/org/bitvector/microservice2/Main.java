@@ -1,10 +1,11 @@
 package org.bitvector.microservice2;
 
 import akka.actor.*;
+import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.Headers;
+import io.undertow.server.RoutingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.duration.Duration;
@@ -36,16 +37,36 @@ public class Main {
             System.exit(1);
         }
 
+        RoutingHandler fooHandler = Handlers.routing()
+                .get("/foo", new HttpHandler() {
+                    @Override
+                    public void handleRequest(HttpServerExchange exchange) throws Exception {
+                        exchange.getResponseSender().send("GET foo");
+                    }
+                })
+                .put("/foo", new HttpHandler() {
+                    @Override
+                    public void handleRequest(HttpServerExchange exchange) throws Exception {
+                        exchange.getResponseSender().send("PUT foo");
+                    }
+                })
+                .post("/foo", new HttpHandler() {
+                    @Override
+                    public void handleRequest(HttpServerExchange exchange) throws Exception {
+                        exchange.getResponseSender().send("POST foo");
+                    }
+                })
+                .delete("/foo", new HttpHandler() {
+                    @Override
+                    public void handleRequest(HttpServerExchange exchange) throws Exception {
+                        exchange.getResponseSender().send("DELETE foo");
+                    }
+                });
 
         Undertow server = Undertow.builder()
                 .addHttpListener(8080, "localhost")
-                .setHandler(new HttpHandler() {
-                    @Override
-                    public void handleRequest(final HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                        exchange.getResponseSender().send("Hello World");
-                    }
-                }).build();
+                .setHandler(fooHandler)
+                .build();
         server.start();
 
 
@@ -76,7 +97,6 @@ public class Main {
         logger.info("Greeting: " + greeting2.message);
 
         logger.info("Finished Initialization");
-        system.shutdown();
     }
 
     public static class Greet implements Serializable {
