@@ -24,10 +24,12 @@ public class Main {
                 props.load(resourceStream);
                 System.setProperties(props);
             } else {
+                // you don't have to have a config file so defaults everywhere...
                 logger.error("Could not load properties file: " + propertiesFile);
             }
         } catch (IOException e) {
             logger.error("Could not load properties file: " + propertiesFile, e);
+            System.exit(1);
         }
 
         // Create the 'helloakka' actor system
