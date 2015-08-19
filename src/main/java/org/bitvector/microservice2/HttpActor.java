@@ -8,6 +8,7 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
+import io.undertow.util.Methods;
 
 import java.io.Serializable;
 
@@ -17,30 +18,19 @@ public class HttpActor extends UntypedActor {
 
     private void start() {
         RoutingHandler fooHandler = Handlers.routing()
-                .get("/foo", new HttpHandler() {
+                .add(Methods.GET, "/foo", new HttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseSender().send("GET foo");
+                        exchange.getResponseSender().send("foo");
                     }
                 })
-                .put("/foo", new HttpHandler() {
+                .add(Methods.GET, "/foo/{id}", new HttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseSender().send("PUT foo");
-                    }
-                })
-                .post("/foo", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseSender().send("POST foo");
-                    }
-                })
-                .delete("/foo", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseSender().send("DELETE foo");
+                        exchange.getResponseSender().send("foo" + exchange.getQueryParameters().get("id"));
                     }
                 });
+
 
         server = Undertow.builder()
                 .addHttpListener(8080, "0.0.0.0")
