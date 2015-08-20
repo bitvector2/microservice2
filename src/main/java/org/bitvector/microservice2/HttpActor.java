@@ -19,21 +19,17 @@ public class HttpActor extends UntypedActor {
 
     private void start() {
         RoutingHandler rootHandler = Handlers.routing()
-                .add(Methods.GET, "/foo", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                        exchange.getResponseSender().send("foo");
-                    }
+                .add(Methods.HEAD, "/foo", exchange -> {
+                    exchange.getResponseSender().close();
                 })
-                .add(Methods.GET, "/foo/{id}", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                        exchange.getResponseSender().send("foo" + exchange.getQueryParameters().get("id"));
-                    }
+                .add(Methods.GET, "/foo", exchange -> {
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+                    exchange.getResponseSender().send("foo\n");
+                })
+                .add(Methods.GET, "/foo/{id}", exchange -> {
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+                    exchange.getResponseSender().send("foo" + exchange.getQueryParameters().get("id") + "\n");
                 });
-
 
         server = Undertow.builder()
                 .addHttpListener(8080, "0.0.0.0", rootHandler)
