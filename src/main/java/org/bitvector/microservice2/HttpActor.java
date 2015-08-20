@@ -8,6 +8,7 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
+import io.undertow.util.Headers;
 import io.undertow.util.Methods;
 
 import java.io.Serializable;
@@ -17,24 +18,25 @@ public class HttpActor extends UntypedActor {
     private Undertow server = null;
 
     private void start() {
-        RoutingHandler fooHandler = Handlers.routing()
+        RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/foo", new HttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) throws Exception {
+                        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
                         exchange.getResponseSender().send("foo");
                     }
                 })
                 .add(Methods.GET, "/foo/{id}", new HttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) throws Exception {
+                        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
                         exchange.getResponseSender().send("foo" + exchange.getQueryParameters().get("id"));
                     }
                 });
 
 
         server = Undertow.builder()
-                .addHttpListener(8080, "0.0.0.0")
-                .setHandler(fooHandler)
+                .addHttpListener(8080, "0.0.0.0", rootHandler)
                 .build();
 
         server.start();
