@@ -10,6 +10,7 @@ import org.hibernate.Transaction;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.spi.ServiceException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -40,13 +41,16 @@ public class DbActor extends AbstractActor {
         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(configuration.getProperties())
                 .build();
-        sessionFactory = configuration.buildSessionFactory(serviceRegistry);
-        log.info("DbActor started");
+        try {
+            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+        } catch (ServiceException e) {
+            log.error("Failed to create DB connection(s): " + e.getMessage());
+            context().stop(this.self());
+        }
     }
 
     private void stop(Stop msg) {
         sessionFactory.close();
-        log.info("DbActor stopped");
     }
 
     private void getAllProducts(GetAllProducts msg) {
