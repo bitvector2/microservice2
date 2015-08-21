@@ -1,3 +1,3 @@
 # microservice2
 
-Undertow.io and Akka.io
+Akka / Undertow / Hibernate / HikariCP
