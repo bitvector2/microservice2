@@ -35,7 +35,7 @@ public class DbActor extends AbstractActor {
 
     private void start(Start msg) {
         Configuration configuration = new Configuration()
-                .addAnnotatedClass(Product.class) // SUPER FUCKING IMPORTANT PER ENTITY
+                .addAnnotatedClass(Product.class)    // SUPER FUCKING IMPORTANT PER ENTITY
                 .configure();
         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(configuration.getProperties())
