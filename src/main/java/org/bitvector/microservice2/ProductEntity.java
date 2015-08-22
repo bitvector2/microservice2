@@ -6,7 +6,7 @@ import java.util.Objects;
 
 @Entity()
 @Table(name = "products")
-public class Product implements Serializable {
+public class ProductEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "products_id_seq")
     // PostgreSQL naming convention
@@ -17,10 +17,10 @@ public class Product implements Serializable {
     @Column(name = "name")
     private String name;
 
-    Product() {
+    ProductEntity() {
     }
 
-    Product(Integer id, String name) {
+    ProductEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -45,9 +45,9 @@ public class Product implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Product product = (Product) o;
-        return Objects.equals(id, product.id) &&
-                Objects.equals(name, product.name);
+        ProductEntity productEntity = (ProductEntity) o;
+        return Objects.equals(id, productEntity.id) &&
+                Objects.equals(name, productEntity.name);
     }
 
     @Override
@@ -57,6 +57,6 @@ public class Product implements Serializable {
 
     @Override
     public String toString() {
-        return "Product{id=" + id + ",name='" + name + "'}";
+        return "ProductEntity{id=" + id + ",name='" + name + "'}";
     }
 }

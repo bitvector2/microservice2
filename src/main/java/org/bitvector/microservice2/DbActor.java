@@ -37,16 +37,16 @@ public class DbActor extends AbstractActor {
 
     private void getAllProducts(GetAllProducts msg) {
         EntityManager em = emf.createEntityManager();
-        TypedQuery<Product> query = em.createQuery("SELECT p FROM Product p", Product.class);
-        List<Product> products = query.getResultList();
-        // return products;
+        TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
+        List<ProductEntity> productEntities = query.getResultList();
+        // return productEntities;
         em.close();
     }
 
     private void getProductById(GetProductById msg) {
         EntityManager em = emf.createEntityManager();
-        Product product = em.find(Product.class, msg.getId());
-        // return product
+        ProductEntity productEntity = em.find(ProductEntity.class, msg.getId());
+        // return productEntity
         em.close();
     }
 
@@ -54,7 +54,7 @@ public class DbActor extends AbstractActor {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         tx.begin();
-        em.persist(msg.getProduct());
+        em.persist(msg.getProductEntity());
         tx.commit();
         em.close();
     }
@@ -63,8 +63,8 @@ public class DbActor extends AbstractActor {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         tx.begin();
-        Product product = em.find(Product.class, msg.getProduct().getId());
-        product.setName(msg.getProduct().getName());
+        ProductEntity productEntity = em.find(ProductEntity.class, msg.getProductEntity().getId());
+        productEntity.setName(msg.getProductEntity().getName());
         tx.commit();
         em.close();
     }
@@ -73,7 +73,7 @@ public class DbActor extends AbstractActor {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         tx.begin();
-        em.remove(msg.getProduct());
+        em.remove(msg.getProductEntity());
         tx.commit();
         em.close();
     }
@@ -88,14 +88,14 @@ public class DbActor extends AbstractActor {
     }
 
     public static class AllProducts implements Serializable {
-        private List<Product> products;
+        private List<ProductEntity> productEntities;
 
-        public AllProducts(List<Product> products) {
-            this.products = products;
+        public AllProducts(List<ProductEntity> productEntities) {
+            this.productEntities = productEntities;
         }
 
-        public List<Product> getProducts() {
-            return products;
+        public List<ProductEntity> getProductEntities() {
+            return productEntities;
         }
     }
 
@@ -112,50 +112,50 @@ public class DbActor extends AbstractActor {
     }
 
     public static class AProduct implements Serializable {
-        private Product product;
+        private ProductEntity productEntity;
 
-        public AProduct(Product product) {
-            this.product = product;
+        public AProduct(ProductEntity productEntity) {
+            this.productEntity = productEntity;
         }
 
-        public Product getProduct() {
-            return product;
+        public ProductEntity getProductEntity() {
+            return productEntity;
         }
     }
 
     public static class AddProduct implements Serializable {
-        private Product product;
+        private ProductEntity productEntity;
 
-        public AddProduct(Product product) {
-            this.product = product;
+        public AddProduct(ProductEntity productEntity) {
+            this.productEntity = productEntity;
         }
 
-        public Product getProduct() {
-            return product;
+        public ProductEntity getProductEntity() {
+            return productEntity;
         }
     }
 
     public static class UpdateProduct implements Serializable {
-        private Product product;
+        private ProductEntity productEntity;
 
-        public UpdateProduct(Product product) {
-            this.product = product;
+        public UpdateProduct(ProductEntity productEntity) {
+            this.productEntity = productEntity;
         }
 
-        public Product getProduct() {
-            return product;
+        public ProductEntity getProductEntity() {
+            return productEntity;
         }
     }
 
     public static class DeleteProduct implements Serializable {
-        private Product product;
+        private ProductEntity productEntity;
 
-        public DeleteProduct(Product product) {
-            this.product = product;
+        public DeleteProduct(ProductEntity productEntity) {
+            this.productEntity = productEntity;
         }
 
-        public Product getProduct() {
-            return product;
+        public ProductEntity getProductEntity() {
+            return productEntity;
         }
     }
 }
