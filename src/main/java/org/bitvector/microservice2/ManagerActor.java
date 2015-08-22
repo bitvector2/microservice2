@@ -7,12 +7,12 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 
-public class DirectorActor extends AbstractActor {
+public class ManagerActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
-    public DirectorActor() {
+    public ManagerActor() {
         receive(ReceiveBuilder
-                        .matchAny(obj -> log.error("DirectorActor received unknown message " + obj.toString()))
+                        .matchAny(obj -> log.error("ManagerActor received unknown message " + obj.toString()))
                         .build()
         );
 
