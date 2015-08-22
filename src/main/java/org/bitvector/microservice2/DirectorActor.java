@@ -7,20 +7,18 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 
-public class Director extends AbstractActor {
+public class DirectorActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
-    public Director() {
+    public DirectorActor() {
         receive(ReceiveBuilder
-                        .matchAny(obj -> log.error("Director received unknown message " + obj.toString()))
+                        .matchAny(obj -> log.error("DirectorActor received unknown message " + obj.toString()))
                         .build()
         );
 
         ActorRef httpActor = this.getContext().actorOf(Props.create(HttpActor.class), "HttpActor");
         this.getContext().watch(httpActor);
-        httpActor.tell(new HttpActor.Start(
-                Integer.parseInt(System.getProperty("bitvector.microservice2.listen-port")),
-                System.getProperty("bitvector.microservice2.listen-address")), this.sender());
+        httpActor.tell(new HttpActor.Start(), this.sender());
 
         ActorRef dbActor = this.getContext().actorOf(Props.create(DbActor.class), "DbActor");
         this.getContext().watch(dbActor);
