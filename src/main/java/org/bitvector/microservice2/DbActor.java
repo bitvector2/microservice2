@@ -4,21 +4,14 @@ import akka.actor.AbstractActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.spi.ServiceException;
 
+import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DbActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-    private SessionFactory sessionFactory;
+    private EntityManagerFactory emf;
 
     public DbActor() {
         receive(ReceiveBuilder
@@ -35,77 +28,54 @@ public class DbActor extends AbstractActor {
     }
 
     private void start(Start msg) {
-        Configuration configuration = new Configuration()
-                .addAnnotatedClass(Product.class)    // NEVER FORGET
-                .configure();
-        ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                .applySettings(configuration.getProperties())
-                .build();
-        try {
-            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
-        } catch (ServiceException e) {
-            log.error("Failed to create DB connection(s): " + e.getMessage());
-            context().stop(this.self());
-        }
+        emf = Persistence.createEntityManagerFactory("microservice");
     }
 
     private void stop(Stop msg) {
-        sessionFactory.close();
+        emf.close();
     }
 
     private void getAllProducts(GetAllProducts msg) {
-        Session session = sessionFactory.openSession();
-        List objs = session.createQuery("FROM Product")
-                .setCacheable(true)
-                .list();
-        session.disconnect();
-
-        List<Product> products = new ArrayList<>();
-        for (Object obj : objs) {
-            products.add((Product) obj);
-        }
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<Product> query = em.createQuery("SELECT p FROM Product p", Product.class);
+        List<Product> products = query.getResultList();
         // return products;
+        em.close();
     }
 
     private void getProductById(GetProductById msg) {
-        Session session = sessionFactory.openSession();
-        List products = session.createQuery("FROM Product WHERE id=:ID")
-                .setParameter("ID", msg.getId())
-                .setCacheable(true)
-                .list();
-        session.disconnect();
-
-        /*
-        if (products.size() > 0) {
-             return (Product) products.get(0);
-        } else {
-             return null;
-        }
-        */
+        EntityManager em = emf.createEntityManager();
+        Product product = em.find(Product.class, msg.getId());
+        // return product
+        em.close();
     }
 
     private void addProduct(AddProduct msg) {
-        Session session = sessionFactory.openSession();
-        Transaction tx = session.beginTransaction();
-        session.save(msg.getProduct());
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+        em.persist(msg.getProduct());
         tx.commit();
-        session.disconnect();
+        em.close();
     }
 
     private void updateProduct(UpdateProduct msg) {
-        Session session = sessionFactory.openSession();
-        Transaction tx = session.beginTransaction();
-        session.update(msg.getProduct());
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+        Product product = em.find(Product.class, msg.getProduct().getId());
+        product.setName(msg.getProduct().getName());
         tx.commit();
-        session.disconnect();
+        em.close();
     }
 
     private void deleteProduct(DeleteProduct msg) {
-        Session session = sessionFactory.openSession();
-        Transaction tx = session.beginTransaction();
-        session.delete(msg.getProduct());
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+        em.remove(msg.getProduct());
         tx.commit();
-        session.disconnect();
+        em.close();
     }
 
     public static class Start implements Serializable {
