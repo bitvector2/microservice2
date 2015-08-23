@@ -8,11 +8,13 @@
     <persistence-unit name="microservice" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://192.168.10.157/microservice"/>
             <property name="javax.persistence.jdbc.user" value="microservice"/>
             <property name="javax.persistence.jdbc.password" value="microservice"/>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.ds.PGSimpleDataSource"/>
+            <property name="javax.persistence.validation.mode" value="NONE"/>
 
             <property name="hibernate.cache.use_query_cache" value="true"/>
             <property name="hibernate.cache.use_second_level_cache" value="true"/>
