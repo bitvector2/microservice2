@@ -26,6 +26,8 @@ dependencies {
     compile "org.hibernate:hibernate-entitymanager:5.0.0.Final"
     compile "org.hibernate:hibernate-java8:5.0.0.Final"
     compile "org.hibernate:hibernate-hikaricp:5.0.0.Final"
+    compile "org.hibernate:hibernate-infinispan:5.0.0.Final"
+    compile "org.infinispan:infinispan-embedded:7.2.4.Final"
     compile "com.zaxxer:HikariCP:2.4.1"
     compile "com.fasterxml.jackson.core:jackson-annotations:2.6.1"
     compile "com.fasterxml.jackson.core:jackson-core:2.6.1"

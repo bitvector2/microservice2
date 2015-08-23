@@ -22,7 +22,7 @@ public class DbActor extends AbstractActor {
                         .match(AddProduct.class, this::addProduct)
                         .match(UpdateProduct.class, this::updateProduct)
                         .match(DeleteProduct.class, this::deleteProduct)
-                        .matchAny(o -> log.error("DbActor received unknown message " + o.toString()))
+                        .matchAny(obj -> log.error("DbActor received unknown message " + obj.toString()))
                         .build()
         );
     }
@@ -38,6 +38,7 @@ public class DbActor extends AbstractActor {
     private void getAllProducts(GetAllProducts msg) {
         EntityManager em = emf.createEntityManager();
         TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
+        query.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.USE);
         List<ProductEntity> productEntities = query.getResultList();
         // return productEntities;
         em.close();
