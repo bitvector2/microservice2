@@ -16,13 +16,13 @@ public class ManagerActor extends AbstractActor {
                         .build()
         );
 
-        ActorRef httpActor = this.getContext().actorOf(Props.create(HttpActor.class), "HttpActor");
-        this.getContext().watch(httpActor);
-        httpActor.tell(new HttpActor.Start(), this.sender());
+        ActorRef httpActor = getContext().actorOf(Props.create(HttpActor.class), "HttpActor");
+        getContext().watch(httpActor);
+        httpActor.tell(new HttpActor.Start(), sender());
 
-        ActorRef dbActor = this.getContext().actorOf(Props.create(DbActor.class), "DbActor");
-        this.getContext().watch(dbActor);
-        dbActor.tell(new DbActor.Start(), this.sender());
+        ActorRef dbActor = getContext().actorOf(Props.create(DbActor.class), "DbActor");
+        getContext().watch(dbActor);
+        dbActor.tell(new DbActor.Start(), sender());
     }
 
 }
