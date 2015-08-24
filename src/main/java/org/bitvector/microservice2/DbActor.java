@@ -28,7 +28,12 @@ public class DbActor extends AbstractActor {
     }
 
     private void start(Start msg) {
-        emf = Persistence.createEntityManagerFactory("microservice");
+        try {
+            emf = Persistence.createEntityManagerFactory("microservice");
+        } catch (PersistenceException e) {
+            log.error("Failed to create DB actor: " + e.getMessage());
+            getContext().stop(self());
+        }
     }
 
     private void stop(Stop msg) {
@@ -40,6 +45,7 @@ public class DbActor extends AbstractActor {
         TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
         query.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.USE);
         List<ProductEntity> productEntities = query.getResultList();
+        log.info("Got some products: " + productEntities.toString());
         // return productEntities;
         em.close();
     }
@@ -47,6 +53,7 @@ public class DbActor extends AbstractActor {
     private void getProductById(GetProductById msg) {
         EntityManager em = emf.createEntityManager();
         ProductEntity productEntity = em.find(ProductEntity.class, msg.getId());
+        log.info("Got a product: " + productEntity.toString());
         // return productEntity
         em.close();
     }

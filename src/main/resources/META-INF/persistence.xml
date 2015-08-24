@@ -7,17 +7,21 @@
 
     <persistence-unit name="microservice" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        <class>org.bitvector.microservice2.ProductEntity</class>
         <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
 
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://192.168.10.157/microservice"/>
+            <!--
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://192.168.10.157/microservice" />
+            -->
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://10.130.48.236/microservice"/>
+
             <property name="javax.persistence.jdbc.user" value="microservice"/>
             <property name="javax.persistence.jdbc.password" value="microservice"/>
-            <property name="javax.persistence.jdbc.driver" value="org.postgresql.ds.PGSimpleDataSource"/>
+            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
 
-            <property name="hibernate.cache.use_query_cache" value="true"/>
-            <property name="hibernate.cache.use_second_level_cache" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="false"/>
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
             <property name="hibernate.cache.region.factory_class"
                       value="org.hibernate.cache.infinispan.InfinispanRegionFactory"/>
             <property name="hibernate.cache.infinispan.statistics" value="false"/>

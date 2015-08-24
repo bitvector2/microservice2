@@ -32,32 +32,40 @@ public class HttpActor extends AbstractActor {
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", exchange -> {
                     getContext().actorSelection("../DbActor").tell(new DbActor.GetAllProducts(), sender());
-
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
                     exchange.getResponseSender().send("products\n");
                 })
                 .add(Methods.GET, "/products/{id}", exchange -> {
+                    Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+                    getContext().actorSelection("../DbActor").tell(new DbActor.GetProductById(id), sender());
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("products" + exchange.getQueryParameters().get("id") + "\n");
+                    exchange.getResponseSender().send("products" + id + "\n");
                 })
                 .add(Methods.PUT, "/products/{id}", exchange -> {
+                    Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("products" + exchange.getQueryParameters().get("id") + "\n");
+                    exchange.getResponseSender().send("products" + id + "\n");
                 })
                 .add(Methods.POST, "/products", exchange -> {
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
                     exchange.getResponseSender().send("products\n");
                 })
                 .add(Methods.DELETE, "/products/{id}", exchange -> {
+                    Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("products" + exchange.getQueryParameters().get("id") + "\n");
+                    exchange.getResponseSender().send("products" + id + "\n");
                 });
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT, settings.LISTEN_ADDRESS, rootHandler)
                 .build();
 
-        server.start();
+        try {
+            server.start();
+        } catch (RuntimeException e) {
+            log.error("Failed to create HTTP actor: " + e.getMessage());
+            getContext().stop(self());
+        }
     }
 
     private void stop(Stop msg) {
