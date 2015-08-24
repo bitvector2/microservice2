@@ -7,6 +7,7 @@
 
     <persistence-unit name="microservice" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
 
         <properties>
@@ -14,7 +15,6 @@
             <property name="javax.persistence.jdbc.user" value="microservice"/>
             <property name="javax.persistence.jdbc.password" value="microservice"/>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.ds.PGSimpleDataSource"/>
-            <property name="javax.persistence.validation.mode" value="NONE"/>
 
             <property name="hibernate.cache.use_query_cache" value="true"/>
             <property name="hibernate.cache.use_second_level_cache" value="true"/>
@@ -34,6 +34,7 @@
             <property name="hibernate.hikari.maximumPoolSize" value="10"/>
             <property name="hibernate.hikari.idleTimeout" value="30000"/>
         </properties>
+
     </persistence-unit>
 </persistence>
 

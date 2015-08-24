@@ -17,12 +17,7 @@ public class ProductEntity implements Serializable {
     @Column(name = "name")
     private String name;
 
-    ProductEntity() {
-    }
-
-    ProductEntity(Integer id, String name) {
-        this.id = id;
-        this.name = name;
+    public ProductEntity() {
     }
 
     public Integer getId() {

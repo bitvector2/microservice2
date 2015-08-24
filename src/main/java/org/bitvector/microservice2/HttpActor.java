@@ -31,6 +31,8 @@ public class HttpActor extends AbstractActor {
     private void start(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", exchange -> {
+                    getContext().actorSelection("../DbActor").tell(new DbActor.GetAllProducts(), sender());
+
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
                     exchange.getResponseSender().send("products\n");
                 })
