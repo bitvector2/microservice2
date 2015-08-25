@@ -1,12 +1,13 @@
 package org.bitvector.microservice2;
 
-
 import akka.actor.AbstractActor;
+import akka.actor.ActorSelection;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.RoutingHandler;
@@ -20,14 +21,15 @@ import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 public class HttpActor extends AbstractActor {
-    final Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
+    private Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private SettingsImpl settings = null;
     private Undertow server = null;
+    private ObjectMapper jsonMapper;
 
     public HttpActor() {
         settings = Settings.SettingsProvider.get(getContext().system());
-
+        jsonMapper = new ObjectMapper();
         receive(ReceiveBuilder
                         .match(Start.class, this::start)
                         .match(Stop.class, this::stop)
@@ -39,20 +41,26 @@ public class HttpActor extends AbstractActor {
     private void start(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", exchange -> {
-                    context().actorSelection("../DbActor").tell(new DbActor.GetAllProducts(), sender());
-                    Future<Object> future = Patterns.ask(context().actorSelection("../DbActor"), new DbActor.GetAllProducts(), timeout);
+                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
+                    Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
                     DbActor.AllProducts result = (DbActor.AllProducts) Await.result(future, timeout.duration());
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send(result.getProductEntities().toString());
+                    String jsonString = jsonMapper.writeValueAsString(result.getProductEntities());
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+                    exchange.getResponseSender().send(jsonString);
                 })
                 .add(Methods.GET, "/products/{id}", exchange -> {
                     Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-                    context().actorSelection("../DbActor").tell(new DbActor.GetProductById(id), sender());
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("products" + id + "\n");
+
+                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
+                    Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProductById(id), timeout);
+                    DbActor.AProduct result = (DbActor.AProduct) Await.result(future, timeout.duration());
+                    String jsonString = jsonMapper.writeValueAsString(result.getProductEntity());
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+                    exchange.getResponseSender().send(jsonString);
                 })
                 .add(Methods.PUT, "/products/{id}", exchange -> {
                     Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
                     exchange.getResponseSender().send("products" + id + "\n");
                 })
@@ -62,6 +70,7 @@ public class HttpActor extends AbstractActor {
                 })
                 .add(Methods.DELETE, "/products/{id}", exchange -> {
                     Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
                     exchange.getResponseSender().send("products" + id + "\n");
                 });
