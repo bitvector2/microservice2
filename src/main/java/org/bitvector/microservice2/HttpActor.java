@@ -43,7 +43,7 @@ public class HttpActor extends AbstractActor {
                     Future<Object> future = Patterns.ask(context().actorSelection("../DbActor"), new DbActor.GetAllProducts(), timeout);
                     DbActor.AllProducts result = (DbActor.AllProducts) Await.result(future, timeout.duration());
                     exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("products\n");
+                    exchange.getResponseSender().send(result.getProductEntities().toString());
                 })
                 .add(Methods.GET, "/products/{id}", exchange -> {
                     Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
