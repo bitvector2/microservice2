@@ -45,16 +45,14 @@ public class DbActor extends AbstractActor {
         TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
         query.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.USE);
         List<ProductEntity> productEntities = query.getResultList();
-        log.info("Got some products: " + productEntities.toString());
-        // return productEntities;
+        sender().tell(new AllProducts(productEntities), self());
         em.close();
     }
 
     private void getProductById(GetProductById msg) {
         EntityManager em = emf.createEntityManager();
         ProductEntity productEntity = em.find(ProductEntity.class, msg.getId());
-        log.info("Got a product: " + productEntity.toString());
-        // return productEntity
+        sender().tell(new AProduct(productEntity), self());
         em.close();
     }
 
