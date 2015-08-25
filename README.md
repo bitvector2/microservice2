@@ -1,6 +1,6 @@
 # microservice2
 
-Testing Akka, Undertow, Hibernate, Infinispan on a cluster of Raspberry Pi 2B servers:
+Testing Akka, Undertow, Hibernate, Hazelcast on a cluster of Raspberry Pi 2B servers:
 
 * git clone https://github.com/bitvector2/microservice2.git
 * cd microservice2
@@ -28,5 +28,5 @@ Technology stack in use:
 * Undertow
 * Hibernate
 * HikariCP
-* Infinispan
+* Hazelcast
 * Gradle
