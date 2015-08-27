@@ -16,13 +16,12 @@ public class ManagerActor extends AbstractActor {
                         .build()
         );
 
-        ActorRef httpActor = getContext().actorOf(Props.create(HttpActor.class), "HttpActor");
-        getContext().watch(httpActor);
+        ActorRef httpActor = context().actorOf(Props.create(HttpActor.class), "HttpActor");
+        context().watch(httpActor);
         httpActor.tell(new HttpActor.Start(), sender());
 
-        ActorRef dbActor = getContext().actorOf(Props.create(DbActor.class), "DbActor");
-        getContext().watch(dbActor);
+        ActorRef dbActor = context().actorOf(Props.create(DbActor.class), "DbActor");
+        context().watch(dbActor);
         dbActor.tell(new DbActor.Start(), sender());
     }
-
 }

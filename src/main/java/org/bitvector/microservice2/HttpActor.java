@@ -10,6 +10,7 @@ import akka.util.Timeout;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
 import io.undertow.util.Headers;
 import io.undertow.util.Methods;
@@ -50,7 +51,6 @@ public class HttpActor extends AbstractActor {
                 })
                 .add(Methods.GET, "/products/{id}", exchange -> {
                     Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-
                     ActorSelection dbActorSel = context().actorSelection("../DbActor");
                     Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProductById(id), timeout);
                     DbActor.AProduct result = (DbActor.AProduct) Await.result(future, timeout.duration());
@@ -60,19 +60,25 @@ public class HttpActor extends AbstractActor {
                 })
                 .add(Methods.PUT, "/products/{id}", exchange -> {
                     Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+                    ProductEntity product = jsonMapper.readValue(getRequestBody(exchange), ProductEntity.class);
+                    product.setId(id);
 
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("products" + id + "\n");
+                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
+                    dbActorSel.tell(new DbActor.UpdateProduct(product), sender());
+                    exchange.getResponseSender().close();
                 })
                 .add(Methods.POST, "/products", exchange -> {
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("products\n");
+                    ProductEntity product = jsonMapper.readValue(getRequestBody(exchange), ProductEntity.class);
+
+                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
+                    dbActorSel.tell(new DbActor.AddProduct(product), sender());
+                    exchange.getResponseSender().close();
                 })
                 .add(Methods.DELETE, "/products/{id}", exchange -> {
                     Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-                    exchange.getResponseSender().send("products" + id + "\n");
+                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
+                    dbActorSel.tell(new DbActor.DeleteProductById(id), sender());
+                    exchange.getResponseSender().close();
                 });
 
         server = Undertow.builder()
@@ -89,6 +95,12 @@ public class HttpActor extends AbstractActor {
 
     private void stop(Stop msg) {
         server.stop();
+    }
+
+    private String getRequestBody(HttpServerExchange exchange) {
+        // FIXME
+        String body = exchange.getRequestChannel().toString();
+        return body;
     }
 
     public static class Start implements Serializable {

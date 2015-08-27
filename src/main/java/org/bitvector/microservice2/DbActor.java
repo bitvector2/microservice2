@@ -21,7 +21,7 @@ public class DbActor extends AbstractActor {
                         .match(GetProductById.class, this::getProductById)
                         .match(AddProduct.class, this::addProduct)
                         .match(UpdateProduct.class, this::updateProduct)
-                        .match(DeleteProduct.class, this::deleteProduct)
+                        .match(DeleteProductById.class, this::deleteProductById)
                         .matchAny(obj -> log.error("DbActor received unknown message " + obj.toString()))
                         .build()
         );
@@ -76,11 +76,12 @@ public class DbActor extends AbstractActor {
         em.close();
     }
 
-    private void deleteProduct(DeleteProduct msg) {
+    private void deleteProductById(DeleteProductById msg) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         tx.begin();
-        em.remove(msg.getProductEntity());
+        ProductEntity productEntity = em.find(ProductEntity.class, msg.getId());
+        em.remove(productEntity);
         tx.commit();
         em.close();
     }
@@ -154,15 +155,15 @@ public class DbActor extends AbstractActor {
         }
     }
 
-    public static class DeleteProduct implements Serializable {
-        private ProductEntity productEntity;
+    public static class DeleteProductById implements Serializable {
+        private Integer id;
 
-        public DeleteProduct(ProductEntity productEntity) {
-            this.productEntity = productEntity;
+        public DeleteProductById(Integer id) {
+            this.id = id;
         }
 
-        public ProductEntity getProductEntity() {
-            return productEntity;
+        public Integer getId() {
+            return id;
         }
     }
 }
