@@ -1,7 +1,7 @@
 # microservice2
 
 Testing Akka, Undertow, Hibernate, HikariCP, and Hazelcast on a cluster of
-[Raspberry Pi 2 Model B servers](https://www.raspberrypi.org/products/raspberry-pi-2-model-b/):
+[Raspberry Pi 2 Model B](https://www.raspberrypi.org/products/raspberry-pi-2-model-b/) servers:
 
 * git clone https://github.com/bitvector2/microservice2.git
 * cd microservice2
