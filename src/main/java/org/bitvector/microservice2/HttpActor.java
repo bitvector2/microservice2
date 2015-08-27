@@ -121,7 +121,6 @@ public class HttpActor extends AbstractActor {
 
     private void handleUpdateProduct(HttpServerExchange exchange) {
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-
         exchange.startBlocking();
         InputStream inputStream = exchange.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
