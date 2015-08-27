@@ -10,7 +10,7 @@ Testing Akka, Undertow, Hibernate, HikariCP, and Hazelcast on a cluster of
 * ./gradlew clean shadowJar
 * ./microservice2.sh
 
-Use the following commands for benchmarking/fault recovery:
+Use the following commands for benchmarking/fault recovery testing:
 
 * ab -n 10000 -c 64 -k https://www.bitvector.org/products/2
 * watch --interval 1 curl --silent --show-error --include --max-time 1 https://www.bitvector.org/products/2
