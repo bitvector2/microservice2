@@ -18,6 +18,9 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
@@ -42,43 +45,19 @@ public class HttpActor extends AbstractActor {
     private void start(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", exchange -> {
-                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
-                    Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
-                    DbActor.AllProducts result = (DbActor.AllProducts) Await.result(future, timeout.duration());
-                    String jsonString = jsonMapper.writeValueAsString(result.getProductEntities());
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-                    exchange.getResponseSender().send(jsonString);
+                    exchange.dispatch(this::handleGetAllProducts);
                 })
                 .add(Methods.GET, "/products/{id}", exchange -> {
-                    Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
-                    Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProductById(id), timeout);
-                    DbActor.AProduct result = (DbActor.AProduct) Await.result(future, timeout.duration());
-                    String jsonString = jsonMapper.writeValueAsString(result.getProductEntity());
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-                    exchange.getResponseSender().send(jsonString);
+                    exchange.dispatch(this::handleGetProductById);
                 })
                 .add(Methods.PUT, "/products/{id}", exchange -> {
-                    Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-                    ProductEntity product = jsonMapper.readValue(getRequestBody(exchange), ProductEntity.class);
-                    product.setId(id);
-
-                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
-                    dbActorSel.tell(new DbActor.UpdateProduct(product), sender());
-                    exchange.getResponseSender().close();
+                    exchange.dispatch(this::handleUpdateProduct);
                 })
                 .add(Methods.POST, "/products", exchange -> {
-                    ProductEntity product = jsonMapper.readValue(getRequestBody(exchange), ProductEntity.class);
-
-                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
-                    dbActorSel.tell(new DbActor.AddProduct(product), sender());
-                    exchange.getResponseSender().close();
+                    exchange.dispatch(this::handleAddProduct);
                 })
                 .add(Methods.DELETE, "/products/{id}", exchange -> {
-                    Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-                    ActorSelection dbActorSel = context().actorSelection("../DbActor");
-                    dbActorSel.tell(new DbActor.DeleteProductById(id), sender());
-                    exchange.getResponseSender().close();
+                    exchange.dispatch(this::handleDeleteProductById);
                 });
 
         server = Undertow.builder()
@@ -97,10 +76,113 @@ public class HttpActor extends AbstractActor {
         server.stop();
     }
 
-    private String getRequestBody(HttpServerExchange exchange) {
-        // FIXME
-        String body = exchange.getRequestChannel().toString();
-        return body;
+    private void handleGetAllProducts(HttpServerExchange exchange) {
+        ActorSelection dbActorSel = context().actorSelection("../DbActor");
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
+
+        String jsonString = null;
+        try {
+            DbActor.AllProducts result = (DbActor.AllProducts) Await.result(future, timeout.duration());
+            jsonString = jsonMapper.writeValueAsString(result.getProductEntities());
+        } catch (Exception e) {
+            log.error("Failed to materialize ProductEntities: " + e.getMessage());
+        }
+
+        if (jsonString != null) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(jsonString);
+        } else {
+            exchange.setResponseCode(500);
+            exchange.getResponseSender().close();
+        }
+    }
+
+    private void handleGetProductById(HttpServerExchange exchange) {
+        Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+        ActorSelection dbActorSel = context().actorSelection("../DbActor");
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProductById(id), timeout);
+
+        String jsonString = null;
+        try {
+            DbActor.AProduct result = (DbActor.AProduct) Await.result(future, timeout.duration());
+            jsonString = jsonMapper.writeValueAsString(result.getProductEntity());
+        } catch (Exception e) {
+            log.error("Failed to materialize ProductEntity: " + e.getMessage());
+        }
+
+        if (jsonString != null) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(jsonString);
+        } else {
+            exchange.setResponseCode(500);
+            exchange.getResponseSender().close();
+        }
+    }
+
+    private void handleUpdateProduct(HttpServerExchange exchange) {
+        Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+
+        exchange.startBlocking();
+        InputStream inputStream = exchange.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder body = new StringBuilder();
+
+        ProductEntity product = null;
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                body.append(line);
+            }
+            reader.close();
+            product = jsonMapper.readValue(body.toString(), ProductEntity.class);
+        } catch (Exception e) {
+            log.error("Failed to read request body: " + e.getMessage());
+        }
+
+        if (product != null) {
+            product.setId(id);
+            ActorSelection dbActorSel = context().actorSelection("../DbActor");
+            dbActorSel.tell(new DbActor.UpdateProduct(product), sender());
+            exchange.getResponseSender().close();
+        } else {
+            exchange.setResponseCode(500);
+            exchange.getResponseSender().close();
+        }
+    }
+
+    private void handleAddProduct(HttpServerExchange exchange) {
+        exchange.startBlocking();
+        InputStream inputStream = exchange.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder body = new StringBuilder();
+
+        ProductEntity product = null;
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                body.append(line);
+            }
+            reader.close();
+            product = jsonMapper.readValue(body.toString(), ProductEntity.class);
+        } catch (Exception e) {
+            log.error("Failed to read request body: " + e.getMessage());
+        }
+
+        if (product != null) {
+            ActorSelection dbActorSel = context().actorSelection("../DbActor");
+            dbActorSel.tell(new DbActor.AddProduct(product), sender());
+            exchange.getResponseSender().close();
+        } else {
+            exchange.setResponseCode(500);
+            exchange.getResponseSender().close();
+        }
+    }
+
+    private void handleDeleteProductById(HttpServerExchange exchange) {
+        Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+        ActorSelection dbActorSel = context().actorSelection("../DbActor");
+        dbActorSel.tell(new DbActor.DeleteProductById(id), sender());
+        exchange.getResponseSender().close();
     }
 
     public static class Start implements Serializable {
