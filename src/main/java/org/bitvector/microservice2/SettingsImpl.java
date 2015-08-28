@@ -4,7 +4,6 @@ import akka.actor.Extension;
 import com.typesafe.config.Config;
 
 public class SettingsImpl implements Extension {
-
     public final String LISTEN_ADDRESS;
     public final Integer LISTEN_PORT;
 

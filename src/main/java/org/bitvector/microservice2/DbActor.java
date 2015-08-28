@@ -168,5 +168,4 @@ public class DbActor extends AbstractActor {
             return productEntity;
         }
     }
-
 }
