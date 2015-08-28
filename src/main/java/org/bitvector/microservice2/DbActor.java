@@ -1,6 +1,7 @@
 package org.bitvector.microservice2;
 
 import akka.actor.AbstractActor;
+import akka.actor.Status.Success;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
@@ -21,7 +22,7 @@ public class DbActor extends AbstractActor {
                         .match(GetProductById.class, this::getProductById)
                         .match(AddProduct.class, this::addProduct)
                         .match(UpdateProduct.class, this::updateProduct)
-                        .match(DeleteProductById.class, this::deleteProductById)
+                        .match(DeleteProduct.class, this::deleteProduct)
                         .matchAny(obj -> log.error("DbActor received unknown message " + obj.toString()))
                         .build()
         );
@@ -63,26 +64,37 @@ public class DbActor extends AbstractActor {
         tx.begin();
         em.persist(msg.getProductEntity());
         tx.commit();
+        sender().tell(new Success(true), self());
         em.close();
     }
 
     private void updateProduct(UpdateProduct msg) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
-        tx.begin();
         ProductEntity productEntity = em.find(ProductEntity.class, msg.getProductEntity().getId());
-        productEntity.setName(msg.getProductEntity().getName());
-        tx.commit();
+        if (productEntity != null) {
+            tx.begin();
+            productEntity.setName(msg.getProductEntity().getName());
+            tx.commit();
+            sender().tell(new Success(true), self());
+        } else {
+            sender().tell(new Success(false), self());
+        }
         em.close();
     }
 
-    private void deleteProductById(DeleteProductById msg) {
+    private void deleteProduct(DeleteProduct msg) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
-        tx.begin();
-        ProductEntity productEntity = em.find(ProductEntity.class, msg.getId());
-        em.remove(productEntity);
-        tx.commit();
+        ProductEntity productEntity = em.find(ProductEntity.class, msg.getProductEntity().getId());
+        if (productEntity != null) {
+            tx.begin();
+            em.remove(productEntity);
+            tx.commit();
+            sender().tell(new Success(true), self());
+        } else {
+            sender().tell(new Success(false), self());
+        }
         em.close();
     }
 
@@ -97,11 +109,9 @@ public class DbActor extends AbstractActor {
 
     public static class AllProducts implements Serializable {
         private List<ProductEntity> productEntities;
-
         public AllProducts(List<ProductEntity> productEntities) {
             this.productEntities = productEntities;
         }
-
         public List<ProductEntity> getProductEntities() {
             return productEntities;
         }
@@ -109,11 +119,9 @@ public class DbActor extends AbstractActor {
 
     public static class GetProductById implements Serializable {
         private Integer id;
-
         public GetProductById(Integer id) {
             this.id = id;
         }
-
         public Integer getId() {
             return id;
         }
@@ -121,11 +129,9 @@ public class DbActor extends AbstractActor {
 
     public static class AProduct implements Serializable {
         private ProductEntity productEntity;
-
         public AProduct(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
-
         public ProductEntity getProductEntity() {
             return productEntity;
         }
@@ -133,11 +139,9 @@ public class DbActor extends AbstractActor {
 
     public static class AddProduct implements Serializable {
         private ProductEntity productEntity;
-
         public AddProduct(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
-
         public ProductEntity getProductEntity() {
             return productEntity;
         }
@@ -145,8 +149,18 @@ public class DbActor extends AbstractActor {
 
     public static class UpdateProduct implements Serializable {
         private ProductEntity productEntity;
-
         public UpdateProduct(ProductEntity productEntity) {
+            this.productEntity = productEntity;
+        }
+        public ProductEntity getProductEntity() {
+            return productEntity;
+        }
+    }
+
+    public static class DeleteProduct implements Serializable {
+        private ProductEntity productEntity;
+
+        public DeleteProduct(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
 
@@ -155,15 +169,4 @@ public class DbActor extends AbstractActor {
         }
     }
 
-    public static class DeleteProductById implements Serializable {
-        private Integer id;
-
-        public DeleteProductById(Integer id) {
-            this.id = id;
-        }
-
-        public Integer getId() {
-            return id;
-        }
-    }
 }

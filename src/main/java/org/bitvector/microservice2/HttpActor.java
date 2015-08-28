@@ -57,7 +57,7 @@ public class HttpActor extends AbstractActor {
                     exchange.dispatch(this::handleAddProduct);
                 })
                 .add(Methods.DELETE, "/products/{id}", exchange -> {
-                    exchange.dispatch(this::handleDeleteProductById);
+                    exchange.dispatch(this::handleDeleteProduct);
                 });
 
         server = Undertow.builder()
@@ -88,12 +88,15 @@ public class HttpActor extends AbstractActor {
             log.error("Failed to materialize ProductEntities: " + e.getMessage());
         }
 
-        if (jsonString != null) {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-            exchange.getResponseSender().send(jsonString);
-        } else {
+        if (jsonString == null) {
             exchange.setResponseCode(500);
             exchange.getResponseSender().close();
+        } else if ("null".equals(jsonString)) {
+            exchange.setResponseCode(404);
+            exchange.getResponseSender().close();
+        } else {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(jsonString);
         }
     }
 
@@ -110,12 +113,15 @@ public class HttpActor extends AbstractActor {
             log.error("Failed to materialize ProductEntity: " + e.getMessage());
         }
 
-        if (jsonString != null) {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-            exchange.getResponseSender().send(jsonString);
-        } else {
+        if (jsonString == null) {
             exchange.setResponseCode(500);
             exchange.getResponseSender().close();
+        } else if ("null".equals(jsonString)) {
+            exchange.setResponseCode(404);
+            exchange.getResponseSender().close();
+        } else {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(jsonString);
         }
     }
 
@@ -141,10 +147,23 @@ public class HttpActor extends AbstractActor {
         if (product != null) {
             product.setId(id);
             ActorSelection dbActorSel = context().actorSelection("../DbActor");
-            dbActorSel.tell(new DbActor.UpdateProduct(product), sender());
-            exchange.getResponseSender().close();
+            Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateProduct(product), timeout);
+            Boolean result;
+            try {
+                result = (Boolean) Await.result(future, timeout.duration());
+                if (result) {
+                    exchange.getResponseSender().close();
+                } else {
+                    exchange.setResponseCode(500);
+                    exchange.getResponseSender().close();
+                }
+            } catch (Exception e) {
+                log.error("Failed to complete operation: " + e.getMessage());
+                exchange.setResponseCode(500);
+                exchange.getResponseSender().close();
+            }
         } else {
-            exchange.setResponseCode(500);
+            exchange.setResponseCode(400);
             exchange.getResponseSender().close();
         }
     }
@@ -169,19 +188,47 @@ public class HttpActor extends AbstractActor {
 
         if (product != null) {
             ActorSelection dbActorSel = context().actorSelection("../DbActor");
-            dbActorSel.tell(new DbActor.AddProduct(product), sender());
-            exchange.getResponseSender().close();
+            Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddProduct(product), timeout);
+            Boolean result;
+            try {
+                result = (Boolean) Await.result(future, timeout.duration());
+                if (result) {
+                    exchange.getResponseSender().close();
+                } else {
+                    exchange.setResponseCode(500);
+                    exchange.getResponseSender().close();
+                }
+            } catch (Exception e) {
+                log.error("Failed to complete operation: " + e.getMessage());
+                exchange.setResponseCode(500);
+                exchange.getResponseSender().close();
+            }
         } else {
-            exchange.setResponseCode(500);
+            exchange.setResponseCode(400);
             exchange.getResponseSender().close();
         }
     }
 
-    private void handleDeleteProductById(HttpServerExchange exchange) {
+    private void handleDeleteProduct(HttpServerExchange exchange) {
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+        ProductEntity product = new ProductEntity();
+        product.setId(id);
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
-        dbActorSel.tell(new DbActor.DeleteProductById(id), sender());
-        exchange.getResponseSender().close();
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteProduct(product), timeout);
+        Boolean result;
+        try {
+            result = (Boolean) Await.result(future, timeout.duration());
+            if (result) {
+                exchange.getResponseSender().close();
+            } else {
+                exchange.setResponseCode(500);
+                exchange.getResponseSender().close();
+            }
+        } catch (Exception e) {
+            log.error("Failed to complete operation: " + e.getMessage());
+            exchange.setResponseCode(500);
+            exchange.getResponseSender().close();
+        }
     }
 
     public static class Start implements Serializable {
