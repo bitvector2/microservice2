@@ -1,11 +1,11 @@
-'use strict'
+'use strict';
 
 var MyCtrl = angular.module('MyCtrl', []);
 
 function MyFunc($scope, $http) {
       $scope.init = function() {
            $scope.getProduct()
-      }
+      };
 
       $scope.getProduct = function() {
            $http.get('https://www.bitvector.org/products/99')
@@ -18,7 +18,6 @@ function MyFunc($scope, $http) {
      }
 }
 
-MyFunc.$inject = ['$scope', '$http']
+MyFunc.$inject = ['$scope', '$http'];
 
-MyCtrl.controller('MyCtrl', MyFunc)
-
+MyCtrl.controller('MyCtrl', MyFunc);
