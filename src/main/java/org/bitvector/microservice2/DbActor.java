@@ -159,11 +159,9 @@ public class DbActor extends AbstractActor {
 
     public static class DeleteProduct implements Serializable {
         private ProductEntity productEntity;
-
         public DeleteProduct(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
-
         public ProductEntity getProductEntity() {
             return productEntity;
         }
