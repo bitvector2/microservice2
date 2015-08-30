@@ -19,7 +19,7 @@ public class DbActor extends AbstractActor {
                         .match(Start.class, this::start)
                         .match(Stop.class, this::stop)
                         .match(GetAllProducts.class, this::getAllProducts)
-                        .match(GetAProduct.class, this::getProductById)
+                        .match(GetProduct.class, this::getProduct)
                         .match(AddProduct.class, this::addProduct)
                         .match(UpdateProduct.class, this::updateProduct)
                         .match(DeleteProduct.class, this::deleteProduct)
@@ -51,10 +51,10 @@ public class DbActor extends AbstractActor {
         em.close();
     }
 
-    private void getProductById(GetAProduct msg) {
+    private void getProduct(GetProduct msg) {
         EntityManager em = emf.createEntityManager();
         ProductEntity productEntity = em.find(ProductEntity.class, msg.getId());
-        sender().tell(new AProduct(productEntity), self());
+        sender().tell(new Product(productEntity), self());
         em.close();
     }
 
@@ -117,10 +117,10 @@ public class DbActor extends AbstractActor {
         }
     }
 
-    public static class GetAProduct implements Serializable {
+    public static class GetProduct implements Serializable {
         private Integer id;
 
-        public GetAProduct(Integer id) {
+        public GetProduct(Integer id) {
             this.id = id;
         }
         public Integer getId() {
@@ -128,9 +128,10 @@ public class DbActor extends AbstractActor {
         }
     }
 
-    public static class AProduct implements Serializable {
+    public static class Product implements Serializable {
         private ProductEntity productEntity;
-        public AProduct(ProductEntity productEntity) {
+
+        public Product(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
         public ProductEntity getProductEntity() {
