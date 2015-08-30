@@ -12,7 +12,7 @@ Testing Akka, Undertow, Hibernate, HikariCP, and Hazelcast on a cluster of
 
 Use the following commands for benchmarking/fault recovery testing:
 
-* ab -n 10000 -c 64 -k https://www.bitvector.org/products/<id>
+* ab -n 10000 -c 64 -k https://www.bitvector.org/products/99
 * watch --interval 1 curl --silent --show-error --include --max-time 1 https://www.bitvector.org/products
 
 To setup a development environment, download and expand Gradle into your home directory and configure such in

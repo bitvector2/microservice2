@@ -45,7 +45,7 @@ public class HttpActor extends AbstractActor {
     private void start(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", this::handleGetAllProducts)
-                .add(Methods.GET, "/products/{id}", this::handleGetProductById)
+                .add(Methods.GET, "/products/{id}", this::handleGetAProduct)
                 .add(Methods.PUT, "/products/{id}", this::handleUpdateProduct)
                 .add(Methods.POST, "/products", this::handleAddProduct)
                 .add(Methods.DELETE, "/products/{id}", this::handleDeleteProduct);
@@ -91,11 +91,11 @@ public class HttpActor extends AbstractActor {
         }
     }
 
-    private void handleGetProductById(HttpServerExchange exchange) {
+    private void handleGetAProduct(HttpServerExchange exchange) {
         exchange.dispatch();
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProductById(id), timeout);
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAProduct(id), timeout);
 
         String jsonString = null;
         try {
