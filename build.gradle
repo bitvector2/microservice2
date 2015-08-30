@@ -22,8 +22,8 @@ dependencies {
     compile "org.scala-lang:scala-library-all:2.12.0-M2"
     compile "com.typesafe.akka:akka-actor_2.11:2.4.0-RC1"
     compile "com.typesafe.akka:akka-slf4j_2.11:2.4.0-RC1"
-    compile "io.undertow:undertow-core:1.3.0.Beta9"
-    compile "org.postgresql:postgresql:9.4-1201-jdbc41"
+    compile "io.undertow:undertow-core:1.3.0.Beta10"
+    compile "org.postgresql:postgresql:9.4-1202-jdbc42"
     compile "org.hibernate:hibernate-core:4.3.11.Final"
     compile "org.hibernate:hibernate-entitymanager:4.3.11.Final"
     compile "org.hibernate:hibernate-hikaricp:4.3.11.Final"
@@ -35,5 +35,5 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:2.6.1"
     testCompile "junit:junit:4.12"
     testCompile "com.jayway.restassured:rest-assured:2.5.0"
-    testCompile "org.postgresql:postgresql:9.4-1201-jdbc41"
+    testCompile "org.postgresql:postgresql:9.4-1202-jdbc42"
 }

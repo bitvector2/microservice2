@@ -44,21 +44,11 @@ public class HttpActor extends AbstractActor {
 
     private void start(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
-                .add(Methods.GET, "/products", exchange -> {
-                    exchange.dispatch(this::handleGetAllProducts);
-                })
-                .add(Methods.GET, "/products/{id}", exchange -> {
-                    exchange.dispatch(this::handleGetProductById);
-                })
-                .add(Methods.PUT, "/products/{id}", exchange -> {
-                    exchange.dispatch(this::handleUpdateProduct);
-                })
-                .add(Methods.POST, "/products", exchange -> {
-                    exchange.dispatch(this::handleAddProduct);
-                })
-                .add(Methods.DELETE, "/products/{id}", exchange -> {
-                    exchange.dispatch(this::handleDeleteProduct);
-                });
+                .add(Methods.GET, "/products", this::handleGetAllProducts)
+                .add(Methods.GET, "/products/{id}", this::handleGetProductById)
+                .add(Methods.PUT, "/products/{id}", this::handleUpdateProduct)
+                .add(Methods.POST, "/products", this::handleAddProduct)
+                .add(Methods.DELETE, "/products/{id}", this::handleDeleteProduct);
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT, settings.LISTEN_ADDRESS, rootHandler)
@@ -77,6 +67,7 @@ public class HttpActor extends AbstractActor {
     }
 
     private void handleGetAllProducts(HttpServerExchange exchange) {
+        exchange.dispatch();
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
 
@@ -89,10 +80,10 @@ public class HttpActor extends AbstractActor {
         }
 
         if (jsonString == null) {
-            exchange.setResponseCode(500);
+            exchange.setStatusCode(500);
             exchange.getResponseSender().close();
         } else if ("null".equals(jsonString)) {
-            exchange.setResponseCode(404);
+            exchange.setStatusCode(404);
             exchange.getResponseSender().close();
         } else {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
@@ -101,6 +92,7 @@ public class HttpActor extends AbstractActor {
     }
 
     private void handleGetProductById(HttpServerExchange exchange) {
+        exchange.dispatch();
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProductById(id), timeout);
@@ -114,10 +106,10 @@ public class HttpActor extends AbstractActor {
         }
 
         if (jsonString == null) {
-            exchange.setResponseCode(500);
+            exchange.setStatusCode(500);
             exchange.getResponseSender().close();
         } else if ("null".equals(jsonString)) {
-            exchange.setResponseCode(404);
+            exchange.setStatusCode(404);
             exchange.getResponseSender().close();
         } else {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
@@ -126,6 +118,7 @@ public class HttpActor extends AbstractActor {
     }
 
     private void handleUpdateProduct(HttpServerExchange exchange) {
+        exchange.dispatch();
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
         exchange.startBlocking();
         InputStream inputStream = exchange.getInputStream();
@@ -154,21 +147,22 @@ public class HttpActor extends AbstractActor {
                 if (result) {
                     exchange.getResponseSender().close();
                 } else {
-                    exchange.setResponseCode(500);
+                    exchange.setStatusCode(500);
                     exchange.getResponseSender().close();
                 }
             } catch (Exception e) {
                 log.error("Failed to complete operation: " + e.getMessage());
-                exchange.setResponseCode(500);
+                exchange.setStatusCode(500);
                 exchange.getResponseSender().close();
             }
         } else {
-            exchange.setResponseCode(400);
+            exchange.setStatusCode(400);
             exchange.getResponseSender().close();
         }
     }
 
     private void handleAddProduct(HttpServerExchange exchange) {
+        exchange.dispatch();
         exchange.startBlocking();
         InputStream inputStream = exchange.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -195,21 +189,22 @@ public class HttpActor extends AbstractActor {
                 if (result) {
                     exchange.getResponseSender().close();
                 } else {
-                    exchange.setResponseCode(500);
+                    exchange.setStatusCode(500);
                     exchange.getResponseSender().close();
                 }
             } catch (Exception e) {
                 log.error("Failed to complete operation: " + e.getMessage());
-                exchange.setResponseCode(500);
+                exchange.setStatusCode(500);
                 exchange.getResponseSender().close();
             }
         } else {
-            exchange.setResponseCode(400);
+            exchange.setStatusCode(400);
             exchange.getResponseSender().close();
         }
     }
 
     private void handleDeleteProduct(HttpServerExchange exchange) {
+        exchange.dispatch();
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
         ProductEntity product = new ProductEntity();
         product.setId(id);
@@ -221,12 +216,12 @@ public class HttpActor extends AbstractActor {
             if (result) {
                 exchange.getResponseSender().close();
             } else {
-                exchange.setResponseCode(500);
+                exchange.setStatusCode(500);
                 exchange.getResponseSender().close();
             }
         } catch (Exception e) {
             log.error("Failed to complete operation: " + e.getMessage());
-            exchange.setResponseCode(500);
+            exchange.setStatusCode(500);
             exchange.getResponseSender().close();
         }
     }
