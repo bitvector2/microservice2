@@ -2,13 +2,18 @@ package org.bitvector.microservice2;
 
 import akka.actor.AbstractActor;
 import akka.actor.Status.Success;
+import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
+import scala.concurrent.Future;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+
+import static akka.dispatch.Futures.future;
 
 public class DbActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -42,12 +47,25 @@ public class DbActor extends AbstractActor {
     }
 
     private void getAllProducts(GetAllProducts msg) {
+        Future<List<ProductEntity>> f = future(() -> {
+            EntityManager em = emf.createEntityManager();
+            TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
+            query.setHint("org.hibernate.cacheable", true);
+            List<ProductEntity> productEntities = query.getResultList();
+            em.close();
+            return productEntities;
+        }, context().system().dispatcher());
+
+        f.onSuccess(new ReturnResult<>(), context().system().dispatcher());
+        // FIXME - not returning somehow
+        /*
         EntityManager em = emf.createEntityManager();
         TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
         query.setHint("org.hibernate.cacheable", true);
         List<ProductEntity> productEntities = query.getResultList();
         sender().tell(new AllProducts(productEntities), self());
         em.close();
+        */
     }
 
     private void getProduct(GetProduct msg) {
@@ -122,6 +140,7 @@ public class DbActor extends AbstractActor {
         public GetProduct(Integer id) {
             this.id = id;
         }
+
         public Integer getId() {
             return id;
         }
@@ -133,6 +152,7 @@ public class DbActor extends AbstractActor {
         public Product(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
+
         public ProductEntity getProductEntity() {
             return productEntity;
         }
@@ -140,6 +160,7 @@ public class DbActor extends AbstractActor {
 
     public static class AddProduct implements Serializable {
         private ProductEntity productEntity;
+
         public AddProduct(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
@@ -150,6 +171,7 @@ public class DbActor extends AbstractActor {
 
     public static class UpdateProduct implements Serializable {
         private ProductEntity productEntity;
+
         public UpdateProduct(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
@@ -160,11 +182,28 @@ public class DbActor extends AbstractActor {
 
     public static class DeleteProduct implements Serializable {
         private ProductEntity productEntity;
+
         public DeleteProduct(ProductEntity productEntity) {
             this.productEntity = productEntity;
         }
         public ProductEntity getProductEntity() {
             return productEntity;
+        }
+    }
+
+    private class ReturnResult<T> extends OnSuccess<T> {
+        @Override
+        public final void onSuccess(T t) {
+            if (t instanceof List) {
+                List<ProductEntity> productEntities = new ArrayList<>();
+                for (Object obj : (List) t) {
+                    productEntities.add((ProductEntity) obj);
+                }
+                sender().tell(new AllProducts(productEntities), self());
+            } else if (t instanceof ProductEntity) {
+                ProductEntity productEntity = (ProductEntity) t;
+                sender().tell(new Product(productEntity), self());
+            }
         }
     }
 }
