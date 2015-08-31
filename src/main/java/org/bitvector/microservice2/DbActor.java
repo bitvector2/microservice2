@@ -33,7 +33,6 @@ public class DbActor extends AbstractActor {
             emf = Persistence.createEntityManagerFactory("microservice");
         } catch (PersistenceException e) {
             log.error("Failed to create DB actor: " + e.getMessage());
-            e.printStackTrace();
             getContext().stop(self());
         }
     }
