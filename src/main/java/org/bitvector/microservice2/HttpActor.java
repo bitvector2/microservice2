@@ -44,11 +44,11 @@ public class HttpActor extends AbstractActor {
 
     private void start(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
-                .add(Methods.GET, "/products", exchange -> exchange.dispatch(this::handleGetAllProducts))
-                .add(Methods.GET, "/products/{id}", exchange -> exchange.dispatch(this::handleGetProduct))
-                .add(Methods.PUT, "/products/{id}", exchange -> exchange.dispatch(this::handleUpdateProduct))
-                .add(Methods.POST, "/products", exchange -> exchange.dispatch(this::handleAddProduct))
-                .add(Methods.DELETE, "/products/{id}", exchange -> exchange.dispatch(this::handleDeleteProduct));
+                .add(Methods.GET, "/products", this::handleGetAllProducts)
+                .add(Methods.GET, "/products/{id}", this::handleGetProduct)
+                .add(Methods.PUT, "/products/{id}", this::handleUpdateProduct)
+                .add(Methods.POST, "/products", this::handleAddProduct)
+                .add(Methods.DELETE, "/products/{id}", this::handleDeleteProduct);
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT, settings.LISTEN_ADDRESS, rootHandler)
@@ -67,6 +67,10 @@ public class HttpActor extends AbstractActor {
     }
 
     private void handleGetAllProducts(HttpServerExchange exchange) {
+        if (exchange.isInIoThread()) {
+            exchange.dispatch();
+        }
+
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
 
@@ -91,6 +95,10 @@ public class HttpActor extends AbstractActor {
     }
 
     private void handleGetProduct(HttpServerExchange exchange) {
+        if (exchange.isInIoThread()) {
+            exchange.dispatch();
+        }
+
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProduct(id), timeout);
@@ -116,6 +124,10 @@ public class HttpActor extends AbstractActor {
     }
 
     private void handleUpdateProduct(HttpServerExchange exchange) {
+        if (exchange.isInIoThread()) {
+            exchange.dispatch();
+        }
+
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
         exchange.startBlocking();
         InputStream inputStream = exchange.getInputStream();
@@ -159,6 +171,10 @@ public class HttpActor extends AbstractActor {
     }
 
     private void handleAddProduct(HttpServerExchange exchange) {
+        if (exchange.isInIoThread()) {
+            exchange.dispatch();
+        }
+
         exchange.startBlocking();
         InputStream inputStream = exchange.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -200,6 +216,10 @@ public class HttpActor extends AbstractActor {
     }
 
     private void handleDeleteProduct(HttpServerExchange exchange) {
+        if (exchange.isInIoThread()) {
+            exchange.dispatch();
+        }
+
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
         ProductEntity product = new ProductEntity();
         product.setId(id);

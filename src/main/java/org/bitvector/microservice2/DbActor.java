@@ -6,14 +6,11 @@ import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import scala.concurrent.Future;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import static akka.dispatch.Futures.future;
 
 public class DbActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -47,6 +44,8 @@ public class DbActor extends AbstractActor {
     }
 
     private void getAllProducts(GetAllProducts msg) {
+        // FIXME - not returning
+        /*
         Future<List<ProductEntity>> f = future(() -> {
             EntityManager em = emf.createEntityManager();
             TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
@@ -57,15 +56,14 @@ public class DbActor extends AbstractActor {
         }, context().system().dispatcher());
 
         f.onSuccess(new ReturnResult<>(), context().system().dispatcher());
-        // FIXME - not returning somehow
-        /*
+        */
+
         EntityManager em = emf.createEntityManager();
         TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
         query.setHint("org.hibernate.cacheable", true);
         List<ProductEntity> productEntities = query.getResultList();
         sender().tell(new AllProducts(productEntities), self());
         em.close();
-        */
     }
 
     private void getProduct(GetProduct msg) {
