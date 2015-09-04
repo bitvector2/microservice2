@@ -8,11 +8,11 @@ function MyFunc($scope, $http) {
       };
 
       $scope.getProduct = function() {
-           $http.get('https://www.bitvector.org/products/99')
-               .success(function(data, status, headers, config) {
+          $http.get('/products/99')
+              .success(function (data) {
                    $scope.product = data['name']
                })
-               .error(function(data, status, header, config) {
+              .error(function () {
                    $scope.product = "ERROR"
                })
      }

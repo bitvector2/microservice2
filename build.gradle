@@ -1,15 +1,10 @@
 plugins {
     id "application"
     id "scala"
+    id "maven"
     id "com.github.johnrengelman.shadow" version "1.2.2" // https://github.com/johnrengelman/shadow
     id "com.github.ben-manes.versions" version "0.11.3"  // https://github.com/ben-manes/gradle-versions-plugin
 }
-
-group = "org.bitvector"
-version = "1.0-SNAPSHOT"
-mainClassName = "org.bitvector.microservice2.Main"
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -36,4 +31,22 @@ dependencies {
     testCompile "junit:junit:4.12"
     testCompile "com.jayway.restassured:rest-assured:2.5.0"
     testCompile "org.postgresql:postgresql:9.4-1202-jdbc42"
+}
+
+group = "org.bitvector"
+version = "1.0-SNAPSHOT"
+mainClassName = "org.bitvector.microservice2.Main"
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+wrapper {
+    gradleVersion = '2.6'
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file:///tmp/microservice2/")
+        }
+    }
 }
