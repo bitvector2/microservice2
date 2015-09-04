@@ -2,14 +2,12 @@ package org.bitvector.microservice2;
 
 import akka.actor.AbstractActor;
 import akka.actor.Status.Success;
-import akka.dispatch.OnSuccess;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DbActor extends AbstractActor {
@@ -44,20 +42,6 @@ public class DbActor extends AbstractActor {
     }
 
     private void getAllProducts(GetAllProducts msg) {
-        // FIXME - not returning
-        /*
-        Future<List<ProductEntity>> f = future(() -> {
-            EntityManager em = emf.createEntityManager();
-            TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
-            query.setHint("org.hibernate.cacheable", true);
-            List<ProductEntity> productEntities = query.getResultList();
-            em.close();
-            return productEntities;
-        }, context().system().dispatcher());
-
-        f.onSuccess(new ReturnResult<>(), context().system().dispatcher());
-        */
-
         EntityManager em = emf.createEntityManager();
         TypedQuery<ProductEntity> query = em.createQuery("SELECT p FROM ProductEntity p", ProductEntity.class);
         query.setHint("org.hibernate.cacheable", true);
@@ -186,22 +170,6 @@ public class DbActor extends AbstractActor {
         }
         public ProductEntity getProductEntity() {
             return productEntity;
-        }
-    }
-
-    private class ReturnResult<T> extends OnSuccess<T> {
-        @Override
-        public final void onSuccess(T t) {
-            if (t instanceof List) {
-                List<ProductEntity> productEntities = new ArrayList<>();
-                for (Object obj : (List) t) {
-                    productEntities.add((ProductEntity) obj);
-                }
-                sender().tell(new AllProducts(productEntities), self());
-            } else if (t instanceof ProductEntity) {
-                ProductEntity productEntity = (ProductEntity) t;
-                sender().tell(new Product(productEntity), self());
-            }
         }
     }
 }
