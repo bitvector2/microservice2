@@ -19,9 +19,13 @@ public class ManagerActor extends AbstractActor {
         ActorRef httpActor = context().actorOf(Props.create(HttpActor.class), "HttpActor");
         context().watch(httpActor);
         httpActor.tell(new HttpActor.Start(), sender());
-
+/*
         ActorRef dbActor = context().actorOf(Props.create(DbActor.class), "DbActor");
         context().watch(dbActor);
         dbActor.tell(new DbActor.Start(), sender());
+*/
+        ActorRef miscActor = context().actorOf(Props.create(MiscActor.class), "MiscActor");
+        context().watch(miscActor);
+        miscActor.tell(new MiscActor.DeleteProduct(1), sender());
     }
 }
