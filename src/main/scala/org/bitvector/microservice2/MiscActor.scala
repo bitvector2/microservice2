@@ -32,8 +32,8 @@ class MiscActor extends Actor with ActorLogging {
   import MiscActor._
 
   def receive = {
-    case Start() => log.info("received start")
-    case Stop() => log.info("received stop")
+    case Start() => this.start()
+    case Stop() => this.stop()
     case GetAllProducts() => log.info("received getallproducts"); val list = new util.ArrayList[Integer](); sender() ! AllProducts(list)
     case GetProduct(_) => log.info("received getproduct"); sender() ! Product(1)
     case AddProduct(_) => log.info("received addproduct"); sender() ! Success
@@ -42,5 +42,12 @@ class MiscActor extends Actor with ActorLogging {
     case _ => log.info("received unknown message")
   }
 
+  def start() = {
+    log.info("received start")
+  }
+
+  def stop() = {
+    log.info("received stop")
+  }
 
 }

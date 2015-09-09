@@ -26,6 +26,6 @@ public class ManagerActor extends AbstractActor {
 */
         ActorRef miscActor = context().actorOf(Props.create(MiscActor.class), "MiscActor");
         context().watch(miscActor);
-        miscActor.tell(new MiscActor.DeleteProduct(1), sender());
+        miscActor.tell(new MiscActor.Start(), sender());
     }
 }
