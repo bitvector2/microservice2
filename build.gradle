@@ -35,6 +35,8 @@ version = "1.0-SNAPSHOT"
 mainClassName = "org.bitvector.microservice2.Main"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+// compile all code with compileScala task
 sourceSets.main.scala.srcDir "src/main/java"
 sourceSets.main.java.srcDirs = []
 
