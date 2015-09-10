@@ -1,6 +1,6 @@
 # microservice2
 
-Testing Akka, Undertow, Hibernate, HikariCP, and Hazelcast on a cluster of
+Testing Akka, Undertow, Slick on a cluster of
 [Raspberry Pi 2 Model B](https://www.raspberrypi.org/products/raspberry-pi-2-model-b/) servers:
 
 * git clone https://github.com/bitvector2/microservice2.git
@@ -26,7 +26,6 @@ Technology stack in use:
 * [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 * [Akka](http://akka.io/)
 * [Undertow](http://undertow.io/)
-* [Hibernate](http://hibernate.org/)
+* [Slick](http://slick.typesafe.com/)
 * [HikariCP](http://brettwooldridge.github.io/HikariCP/)
-* [Hazelcast](http://hazelcast.org/)
 * [Gradle](http://gradle.org/)
