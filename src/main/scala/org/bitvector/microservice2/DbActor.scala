@@ -31,7 +31,7 @@ class DbActor extends Actor with ActorLogging {
 
   val settings = Settings(context.system)
   val database = Database.forConfig("service.database")
-  val products = TableQuery[Products]
+  val productsQuery = TableQuery[Products]
 
   def receive = {
     case Start() => this.doStart()
