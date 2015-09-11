@@ -10,4 +10,5 @@ class ProductEntity(tag: Tag) extends Table[(Int, String)](tag, "products") {
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc) // This is the primary key column
 
   def name = column[String]("name")
+
 }

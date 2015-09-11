@@ -6,7 +6,7 @@ import akka.actor.Status.Success
 import akka.actor.{Actor, ActorLogging}
 import slick.driver.PostgresDriver.api._
 
-import scala.concurrent.ExecutionContext.Implicits.global
+// import scala.concurrent.ExecutionContext.Implicits.global
 
 object DbActor {
 
@@ -16,17 +16,17 @@ object DbActor {
 
   case class GetAllProducts()
 
-  case class AllProducts(products: java.util.ArrayList[Integer])
+  case class AllProducts(products: java.util.ArrayList[ProductEntity])
 
-  case class GetProduct(product: Integer)
+  case class GetProduct(id: Int)
 
-  case class Product(id: Integer)
+  case class Product(product: ProductEntity)
 
-  case class AddProduct(product: Integer)
+  case class AddProduct(product: ProductEntity)
 
-  case class UpdateProduct(product: Integer)
+  case class UpdateProduct(product: ProductEntity)
 
-  case class DeleteProduct(product: Integer)
+  case class DeleteProduct(product: ProductEntity)
 
 }
 
@@ -39,27 +39,50 @@ class DbActor extends Actor with ActorLogging {
   val productEntity = TableQuery[ProductEntity]
 
   def receive = {
-    case Start() => this.start()
-    case Stop() => this.stop()
-    case GetAllProducts() => log.info("received getallproducts"); val list = new util.ArrayList[Integer](); sender() ! AllProducts(list)
-    case GetProduct(_) => log.info("received getproduct"); sender() ! Product(1)
-    case AddProduct(_) => log.info("received addproduct"); sender() ! Success
-    case UpdateProduct(_) => log.info("received updateproduct"); sender() ! Success
-    case DeleteProduct(_) => log.info("received deleteproduct"); sender() ! Success
+    case Start() => this.doStart()
+    case Stop() => this.doStop()
+    case GetAllProducts() => this.doGetAllProducts()
+    case GetProduct(id) => this.doGetProduct(id)
+    case AddProduct(product) => this.doAddProduct(product)
+    case UpdateProduct(product) => this.doUpdateProduct(product)
+    case DeleteProduct(product) => this.doDeleteProduct(product)
     case _ => log.info("received unknown message")
   }
 
-  def start() = {
+  def doStart() = {
     log.info("received start")
-    println("Products:")
-    database.run(productEntity.result).map(_.foreach {
-      case (id, name) =>
-        println("\t" + id + ": " + name)
-    })
   }
 
-  def stop() = {
+  def doStop() = {
     database.close()
     log.info("received stop")
   }
+
+  def doGetAllProducts() = {
+    log.info("received getallproducts")
+    val products = new util.ArrayList[ProductEntity]()
+    sender() ! AllProducts(products)
+  }
+
+  def doGetProduct(id: Int) = {
+    log.info("received getproduct")
+    val product = new ProductEntity(tag = null)
+    sender() ! Product(product)
+  }
+
+  def doAddProduct(product: ProductEntity) = {
+    log.info("received addproduct")
+    sender() ! Success
+  }
+
+  def doUpdateProduct(product: ProductEntity) = {
+    log.info("received updateproduct")
+    sender() ! Success
+  }
+
+  def doDeleteProduct(product: ProductEntity) = {
+    log.info("received deleteproduct")
+    sender() ! Success
+  }
+
 }

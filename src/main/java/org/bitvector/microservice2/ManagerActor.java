@@ -16,11 +16,9 @@ public class ManagerActor extends AbstractActor {
                         .build()
         );
 
-        /*
         ActorRef httpActor = context().actorOf(Props.create(HttpActor.class), "HttpActor");
         context().watch(httpActor);
         httpActor.tell(new HttpActor.Start(), sender());
-        */
 
         ActorRef dbActor = context().actorOf(Props.create(DbActor.class), "DbActor");
         context().watch(dbActor);
