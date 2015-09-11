@@ -8,6 +8,7 @@ import akka.japi.pf.ReceiveBuilder;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
@@ -18,11 +19,12 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
+
+// import java.io.BufferedReader;
+// import java.io.InputStream;
+// import java.io.InputStreamReader;
 
 public class HttpActor extends AbstractActor {
     private Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
@@ -34,6 +36,8 @@ public class HttpActor extends AbstractActor {
     public HttpActor() {
         settings = Settings.get(getContext().system());
         jsonMapper = new ObjectMapper();
+        jsonMapper.registerModule(new DefaultScalaModule());
+
         receive(ReceiveBuilder
                         .match(Start.class, this::doStart)
                         .match(Stop.class, this::doStop)
@@ -45,10 +49,10 @@ public class HttpActor extends AbstractActor {
     private void doStart(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", this::doGetAllProducts)
-                .add(Methods.GET, "/products/{id}", this::doGetProduct)
-                .add(Methods.PUT, "/products/{id}", this::doUpdateProduct)
-                .add(Methods.POST, "/products", this::doAddProduct)
-                .add(Methods.DELETE, "/products/{id}", this::doDeleteProduct);
+                .add(Methods.GET, "/products/{id}", this::doGetProduct);
+        // .add(Methods.PUT, "/products/{id}", this::doUpdateProduct)
+        // .add(Methods.POST, "/products", this::doAddProduct)
+        // .add(Methods.DELETE, "/products/{id}", this::doDeleteProduct);
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT(), settings.LISTEN_ADDRESS(), rootHandler)
@@ -99,16 +103,16 @@ public class HttpActor extends AbstractActor {
             exchange.dispatch();
         }
 
-        Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+        long id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProduct(id), timeout);
 
         String jsonString = null;
         try {
-            DbActor.Product result = (DbActor.Product) Await.result(future, timeout.duration());
+            DbActor.AProduct result = (DbActor.AProduct) Await.result(future, timeout.duration());
             jsonString = jsonMapper.writeValueAsString(result.product());
         } catch (Exception e) {
-            log.error("Failed to materialize ProductEntity: " + e.getMessage());
+            log.error("Failed to materialize Products: " + e.getMessage());
         }
 
         if (jsonString == null) {
@@ -123,6 +127,7 @@ public class HttpActor extends AbstractActor {
         }
     }
 
+    /*
     private void doUpdateProduct(HttpServerExchange exchange) {
         if (exchange.isInIoThread()) {
             exchange.dispatch();
@@ -134,14 +139,14 @@ public class HttpActor extends AbstractActor {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder body = new StringBuilder();
 
-        ProductEntity product = new ProductEntity(null);
+        Products product = new Products(null);
         try {
             String line;
             while ((line = reader.readLine()) != null) {
                 body.append(line);
             }
             reader.close();
-            product = jsonMapper.readValue(body.toString(), ProductEntity.class);
+            product = jsonMapper.readValue(body.toString(), Products.class);
         } catch (Exception e) {
             log.error("Failed to read request body: " + e.getMessage());
         }
@@ -180,14 +185,14 @@ public class HttpActor extends AbstractActor {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder body = new StringBuilder();
 
-        ProductEntity product = null;
+        Products product = null;
         try {
             String line;
             while ((line = reader.readLine()) != null) {
                 body.append(line);
             }
             reader.close();
-            product = jsonMapper.readValue(body.toString(), ProductEntity.class);
+            product = jsonMapper.readValue(body.toString(), Products.class);
         } catch (Exception e) {
             log.error("Failed to read request body: " + e.getMessage());
         }
@@ -221,7 +226,7 @@ public class HttpActor extends AbstractActor {
         }
 
         Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-        ProductEntity product = new ProductEntity(null);
+        Products product = new Products(null);
         // product.id(); FIXME
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteProduct(product), timeout);
@@ -240,6 +245,7 @@ public class HttpActor extends AbstractActor {
             exchange.getResponseSender().close();
         }
     }
+    */
 
     public static class Start implements Serializable {
     }

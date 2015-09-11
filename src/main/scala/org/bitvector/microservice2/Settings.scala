@@ -4,8 +4,8 @@ import akka.actor.{ActorSystem, ExtendedActorSystem, Extension, ExtensionId, Ext
 import com.typesafe.config.Config
 
 class SettingsImpl(config: Config) extends Extension {
-  val LISTEN_ADDRESS = config.getString("microservice2.listen-address")
-  val LISTEN_PORT = config.getInt("microservice2.listen-port")
+  val LISTEN_ADDRESS = config.getString("service.listen-address")
+  val LISTEN_PORT = config.getInt("service.listen-port")
 }
 
 object Settings extends ExtensionId[SettingsImpl] with ExtensionIdProvider {
