@@ -54,15 +54,15 @@ class DbActor extends Actor with ActorLogging {
   }
 
   def doGetAllProducts() = {
-    val products = new ArrayBuffer[Product]()
-    products += new Product(1L, "foo")
-    products += new Product(2L, "bar")
-    products += new Product(3L, "baz")
+    val products = ArrayBuffer[Product]()
+    products += Product(1L, "foo")
+    products += Product(2L, "bar")
+    products += Product(3L, "baz")
     sender() ! AllProducts(products)
   }
 
   def doGetProduct(id: Long) = {
-    val product = new Product(1L, "asdf")
+    val product = Product(1L, "asdf")
     sender() ! AProduct(product)
   }
 
