@@ -2,7 +2,7 @@ package org.bitvector.microservice2
 
 import slick.driver.PostgresDriver.api._
 
-case class Product(id: Long, name: String)
+case class Product(var id: Long, var name: String)
 
 class Products(tag: Tag) extends Table[Product](tag, "products") {
   def * = (id, name) <>(Product.tupled, Product.unapply)

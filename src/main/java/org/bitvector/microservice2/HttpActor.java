@@ -19,12 +19,11 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
-
-// import java.io.BufferedReader;
-// import java.io.InputStream;
-// import java.io.InputStreamReader;
 
 public class HttpActor extends AbstractActor {
     private Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
@@ -49,10 +48,10 @@ public class HttpActor extends AbstractActor {
     private void doStart(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", this::doGetAllProducts)
-                .add(Methods.GET, "/products/{id}", this::doGetProduct);
-        // .add(Methods.PUT, "/products/{id}", this::doUpdateProduct)
-        // .add(Methods.POST, "/products", this::doAddProduct)
-        // .add(Methods.DELETE, "/products/{id}", this::doDeleteProduct);
+                .add(Methods.GET, "/products/{id}", this::doGetProduct)
+                .add(Methods.PUT, "/products/{id}", this::doUpdateProduct)
+                .add(Methods.POST, "/products", this::doAddProduct)
+                .add(Methods.DELETE, "/products/{id}", this::doDeleteProduct);
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT(), settings.LISTEN_ADDRESS(), rootHandler)
@@ -127,32 +126,31 @@ public class HttpActor extends AbstractActor {
         }
     }
 
-    /*
     private void doUpdateProduct(HttpServerExchange exchange) {
         if (exchange.isInIoThread()) {
             exchange.dispatch();
         }
 
-        Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+        Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
         exchange.startBlocking();
         InputStream inputStream = exchange.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder body = new StringBuilder();
 
-        Products product = new Products(null);
+        Product product = null;
         try {
             String line;
             while ((line = reader.readLine()) != null) {
                 body.append(line);
             }
             reader.close();
-            product = jsonMapper.readValue(body.toString(), Products.class);
+            product = jsonMapper.readValue(body.toString(), Product.class);
         } catch (Exception e) {
             log.error("Failed to read request body: " + e.getMessage());
         }
 
         if (product != null) {
-            // product.id(); FIXME
+            product.id_$eq(id);
             ActorSelection dbActorSel = context().actorSelection("../DbActor");
             Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateProduct(product), timeout);
             Boolean result;
@@ -185,14 +183,14 @@ public class HttpActor extends AbstractActor {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder body = new StringBuilder();
 
-        Products product = null;
+        Product product = null;
         try {
             String line;
             while ((line = reader.readLine()) != null) {
                 body.append(line);
             }
             reader.close();
-            product = jsonMapper.readValue(body.toString(), Products.class);
+            product = jsonMapper.readValue(body.toString(), Product.class);
         } catch (Exception e) {
             log.error("Failed to read request body: " + e.getMessage());
         }
@@ -225,9 +223,8 @@ public class HttpActor extends AbstractActor {
             exchange.dispatch();
         }
 
-        Integer id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
-        Products product = new Products(null);
-        // product.id(); FIXME
+        Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
+        Product product = new Product(id, null);
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteProduct(product), timeout);
         Boolean result;
@@ -245,7 +242,6 @@ public class HttpActor extends AbstractActor {
             exchange.getResponseSender().close();
         }
     }
-    */
 
     public static class Start implements Serializable {
     }
