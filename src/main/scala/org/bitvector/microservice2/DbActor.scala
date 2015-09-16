@@ -4,16 +4,14 @@ import akka.actor.Status.Success
 import akka.actor.{Actor, ActorLogging}
 import slick.driver.PostgresDriver.api._
 
-import scala.collection.mutable.ArrayBuffer
-
-// import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object DbActor {
   case class Start()
   case class Stop()
   case class GetAllProducts()
 
-  case class AllProducts(products: ArrayBuffer[Product])
+  case class AllProducts(products: Seq[Product])
 
   case class GetProduct(id: Long)
 
@@ -54,16 +52,19 @@ class DbActor extends Actor with ActorLogging {
   }
 
   def doGetAllProducts() = {
-    val products = ArrayBuffer[Product]()
-    products += Product(1L, "foo")
-    products += Product(2L, "bar")
-    products += Product(3L, "baz")
-    sender() ! AllProducts(products)
+    val caller = sender()
+    val future = database.run(productsQuery.result)
+    future.onSuccess {
+      case result => caller ! AllProducts(result)
+    }
   }
 
   def doGetProduct(id: Long) = {
-    val product = Product(1L, "asdf")
-    sender() ! AProduct(product)
+    val caller = sender()
+    val future = database.run(productsQuery.filter(p => p.id === id).result)
+    future.onSuccess {
+      case result => caller ! AProduct(result.head)
+    }
   }
 
   def doAddProduct(product: Product) = {
