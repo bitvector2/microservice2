@@ -68,17 +68,20 @@ class DbActor extends Actor with ActorLogging {
   }
 
   def doAddProduct(product: Product) = {
+    val caller = sender()
     log.info("received addproduct")
-    sender() ! Success
+    caller ! Success
   }
 
   def doUpdateProduct(product: Product) = {
+    val caller = sender()
     log.info("received updateproduct")
-    sender() ! Success
+    caller ! Success
   }
 
   def doDeleteProduct(product: Product) = {
+    val caller = sender()
     log.info("received deleteproduct")
-    sender() ! Success
+    caller ! Success
   }
 }
