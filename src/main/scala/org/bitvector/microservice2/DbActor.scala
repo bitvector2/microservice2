@@ -63,25 +63,31 @@ class DbActor extends Actor with ActorLogging {
     val caller = sender()
     val future = database.run(productsQuery.filter(p => p.id === id).result)
     future.onSuccess {
-      case result => caller ! AProduct(result.head)
+      case result => if (result.isEmpty) caller ! AProduct(null) else caller ! AProduct(result.head)
     }
   }
 
   def doAddProduct(product: Product) = {
     val caller = sender()
-    log.info("received addproduct")
-    caller ! true
+    val future = database.run(productsQuery += product)
+    future.onSuccess {
+      case result => if (result != 1) caller ! false else caller ! true
+    }
   }
 
   def doUpdateProduct(product: Product) = {
     val caller = sender()
-    log.info("received updateproduct")
-    caller ! true
+    val future = database.run((for {p <- productsQuery if p.id === product.id} yield p.name).update(product.name))
+    future.onSuccess {
+      case result => if (result != 1) caller ! false else caller ! true
+    }
   }
 
   def doDeleteProduct(product: Product) = {
     val caller = sender()
-    log.info("received deleteproduct")
-    caller ! true
+    val future = database.run(productsQuery.filter(p => p.id === product.id).delete)
+    future.onSuccess {
+      case result => if (result != 1) caller ! false else caller ! true
+    }
   }
 }

@@ -31,7 +31,7 @@ public class HttpActorTest {
 
         try {
             conn = DriverManager.getConnection(
-                    "jdbc:postgresql://192.168.10.157:5432/microservice",
+                    "jdbc:postgresql://10.130.48.236:5432/microservice",
                     "microservice",
                     "microservice"
             );

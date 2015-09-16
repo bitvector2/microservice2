@@ -216,7 +216,7 @@ public class HttpActor extends AbstractActor {
                 exchange.getResponseSender().close();
             } else {
                 log.error("Failed to complete operation.");
-                exchange.setStatusCode(500);
+                exchange.setStatusCode(404);
                 exchange.getResponseSender().close();
             }
         } catch (Exception e) {
