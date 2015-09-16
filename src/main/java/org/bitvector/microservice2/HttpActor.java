@@ -47,11 +47,11 @@ public class HttpActor extends AbstractActor {
 
     private void doStart(Start msg) {
         RoutingHandler rootHandler = Handlers.routing()
-                .add(Methods.GET, "/products", this::doGetAllProducts)
-                .add(Methods.GET, "/products/{id}", this::doGetProduct)
-                .add(Methods.PUT, "/products/{id}", this::doUpdateProduct)
-                .add(Methods.POST, "/products", this::doAddProduct)
-                .add(Methods.DELETE, "/products/{id}", this::doDeleteProduct);
+                .add(Methods.GET, "/products", exchange -> exchange.dispatch(this::doGetAllProducts))
+                .add(Methods.GET, "/products/{id}", exchange -> exchange.dispatch(this::doGetProduct))
+                .add(Methods.PUT, "/products/{id}", exchange -> exchange.dispatch(this::doUpdateProduct))
+                .add(Methods.POST, "/products", exchange -> exchange.dispatch(this::doAddProduct))
+                .add(Methods.DELETE, "/products/{id}", exchange -> exchange.dispatch(this::doDeleteProduct));
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT(), settings.LISTEN_ADDRESS(), rootHandler)
@@ -70,10 +70,6 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doGetAllProducts(HttpServerExchange exchange) {
-        if (exchange.isInIoThread()) {
-            exchange.dispatch();
-        }
-
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
 
@@ -82,7 +78,7 @@ public class HttpActor extends AbstractActor {
             DbActor.AllProducts result = (DbActor.AllProducts) Await.result(future, timeout.duration());
             jsonString = jsonMapper.writeValueAsString(result.products());
         } catch (Exception e) {
-            log.error("Failed to materialize ProductEntities: " + e.getMessage());
+            log.error("Failed to materialize Product(s): " + e.getMessage());
         }
 
         if (jsonString == null) {
@@ -98,11 +94,7 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doGetProduct(HttpServerExchange exchange) {
-        if (exchange.isInIoThread()) {
-            exchange.dispatch();
-        }
-
-        long id = Integer.parseInt(exchange.getQueryParameters().get("id").getFirst());
+        Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProduct(id), timeout);
 
@@ -111,7 +103,7 @@ public class HttpActor extends AbstractActor {
             DbActor.AProduct result = (DbActor.AProduct) Await.result(future, timeout.duration());
             jsonString = jsonMapper.writeValueAsString(result.product());
         } catch (Exception e) {
-            log.error("Failed to materialize Products: " + e.getMessage());
+            log.error("Failed to materialize Product(s): " + e.getMessage());
         }
 
         if (jsonString == null) {
@@ -127,10 +119,6 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doUpdateProduct(HttpServerExchange exchange) {
-        if (exchange.isInIoThread()) {
-            exchange.dispatch();
-        }
-
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
         exchange.startBlocking();
         InputStream inputStream = exchange.getInputStream();
@@ -174,10 +162,6 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doAddProduct(HttpServerExchange exchange) {
-        if (exchange.isInIoThread()) {
-            exchange.dispatch();
-        }
-
         exchange.startBlocking();
         InputStream inputStream = exchange.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -219,10 +203,6 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doDeleteProduct(HttpServerExchange exchange) {
-        if (exchange.isInIoThread()) {
-            exchange.dispatch();
-        }
-
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
         Product product = new Product(id, null);
         ActorSelection dbActorSel = context().actorSelection("../DbActor");

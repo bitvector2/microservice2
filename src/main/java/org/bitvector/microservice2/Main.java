@@ -9,10 +9,8 @@ public class Main {
     public static void main(String[] args) {
         Logger logger = LoggerFactory.getLogger(Main.class.getName());
         logger.info("Starting Actor Initialization");
-
         ActorSystem system = ActorSystem.create("TheTheatre");
         system.actorOf(Props.create(ManagerActor.class), "ManagerActor");
-
         logger.info("Finished Actor Initialization");
     }
 }
