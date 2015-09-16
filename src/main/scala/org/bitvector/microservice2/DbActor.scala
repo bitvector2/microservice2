@@ -1,6 +1,6 @@
 package org.bitvector.microservice2
 
-import akka.actor.Status.Success
+
 import akka.actor.{Actor, ActorLogging}
 import slick.driver.PostgresDriver.api._
 
@@ -70,18 +70,18 @@ class DbActor extends Actor with ActorLogging {
   def doAddProduct(product: Product) = {
     val caller = sender()
     log.info("received addproduct")
-    caller ! Success
+    caller ! true
   }
 
   def doUpdateProduct(product: Product) = {
     val caller = sender()
     log.info("received updateproduct")
-    caller ! Success
+    caller ! true
   }
 
   def doDeleteProduct(product: Product) = {
     val caller = sender()
     log.info("received deleteproduct")
-    caller ! Success
+    caller ! true
   }
 }

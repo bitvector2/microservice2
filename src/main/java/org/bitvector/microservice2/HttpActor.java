@@ -135,28 +135,28 @@ public class HttpActor extends AbstractActor {
             product = jsonMapper.readValue(body.toString(), Product.class);
         } catch (Exception e) {
             log.error("Failed to read request body: " + e.getMessage());
+            exchange.setStatusCode(400);
+            exchange.getResponseSender().close();
+            return;
         }
 
-        if (product != null) {
-            product.id_$eq(id);
-            ActorSelection dbActorSel = context().actorSelection("../DbActor");
-            Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateProduct(product), timeout);
-            Boolean result;
-            try {
-                result = (Boolean) Await.result(future, timeout.duration());
-                if (result) {
-                    exchange.getResponseSender().close();
-                } else {
-                    exchange.setStatusCode(500);
-                    exchange.getResponseSender().close();
-                }
-            } catch (Exception e) {
-                log.error("Failed to complete operation: " + e.getMessage());
+        product.id_$eq(id);
+        ActorSelection dbActorSel = context().actorSelection("../DbActor");
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateProduct(product), timeout);
+
+        Boolean result = null;
+        try {
+            result = (Boolean) Await.result(future, timeout.duration());
+            if (result) {
+                exchange.getResponseSender().close();
+            } else {
+                log.error("Failed to complete operation.");
                 exchange.setStatusCode(500);
                 exchange.getResponseSender().close();
             }
-        } else {
-            exchange.setStatusCode(400);
+        } catch (Exception e) {
+            log.error("Failed to complete operation: " + e.getMessage());
+            exchange.setStatusCode(500);
             exchange.getResponseSender().close();
         }
     }
@@ -177,42 +177,45 @@ public class HttpActor extends AbstractActor {
             product = jsonMapper.readValue(body.toString(), Product.class);
         } catch (Exception e) {
             log.error("Failed to read request body: " + e.getMessage());
+            exchange.setStatusCode(400);
+            exchange.getResponseSender().close();
+            return;
         }
 
-        if (product != null) {
-            ActorSelection dbActorSel = context().actorSelection("../DbActor");
-            Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddProduct(product), timeout);
-            Boolean result;
-            try {
-                result = (Boolean) Await.result(future, timeout.duration());
-                if (result) {
-                    exchange.getResponseSender().close();
-                } else {
-                    exchange.setStatusCode(500);
-                    exchange.getResponseSender().close();
-                }
-            } catch (Exception e) {
-                log.error("Failed to complete operation: " + e.getMessage());
+        ActorSelection dbActorSel = context().actorSelection("../DbActor");
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddProduct(product), timeout);
+
+        Boolean result = null;
+        try {
+            result = (Boolean) Await.result(future, timeout.duration());
+            if (result) {
+                exchange.getResponseSender().close();
+            } else {
+                log.error("Failed to complete operation.");
                 exchange.setStatusCode(500);
                 exchange.getResponseSender().close();
             }
-        } else {
-            exchange.setStatusCode(400);
+        } catch (Exception e) {
+            log.error("Failed to complete operation: " + e.getMessage());
+            exchange.setStatusCode(500);
             exchange.getResponseSender().close();
         }
     }
 
     private void doDeleteProduct(HttpServerExchange exchange) {
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
+
         Product product = new Product(id, null);
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteProduct(product), timeout);
-        Boolean result;
+
+        Boolean result = null;
         try {
             result = (Boolean) Await.result(future, timeout.duration());
             if (result) {
                 exchange.getResponseSender().close();
             } else {
+                log.error("Failed to complete operation.");
                 exchange.setStatusCode(500);
                 exchange.getResponseSender().close();
             }
