@@ -31,7 +31,7 @@ public class HttpActorTest {
 
         try {
             conn = DriverManager.getConnection(
-                    "jdbc:postgresql://10.130.48.236:5432/microservice",
+                    "jdbc:postgresql://192.168.10.157:5432/microservice",
                     "microservice",
                     "microservice"
             );
@@ -51,7 +51,7 @@ public class HttpActorTest {
     }
 
     public void emptyProducts() {
-        Statement stmt = null;
+        Statement stmt;
 
         try {
             stmt = conn.createStatement();
@@ -65,7 +65,7 @@ public class HttpActorTest {
     }
 
     public String addProduct() {
-        Statement stmt = null;
+        Statement stmt;
         UUID uuid = UUID.randomUUID();
 
         try {

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.UndertowOptions;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
 import io.undertow.util.Headers;
@@ -55,6 +56,7 @@ public class HttpActor extends AbstractActor {
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT(), settings.LISTEN_ADDRESS(), rootHandler)
+                .setServerOption(UndertowOptions.ENABLE_HTTP2, true)
                 .build();
 
         try {
@@ -88,7 +90,7 @@ public class HttpActor extends AbstractActor {
             exchange.setStatusCode(404);
             exchange.getResponseSender().close();
         } else {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=utf-8");
             exchange.getResponseSender().send(jsonString);
         }
     }
@@ -113,7 +115,7 @@ public class HttpActor extends AbstractActor {
             exchange.setStatusCode(404);
             exchange.getResponseSender().close();
         } else {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=utf-8");
             exchange.getResponseSender().send(jsonString);
         }
     }
@@ -125,7 +127,7 @@ public class HttpActor extends AbstractActor {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder body = new StringBuilder();
 
-        Product product = null;
+        Product product;
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -144,7 +146,7 @@ public class HttpActor extends AbstractActor {
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateProduct(product), timeout);
 
-        Boolean result = null;
+        Boolean result;
         try {
             result = (Boolean) Await.result(future, timeout.duration());
             if (result) {
@@ -167,7 +169,7 @@ public class HttpActor extends AbstractActor {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder body = new StringBuilder();
 
-        Product product = null;
+        Product product;
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -185,7 +187,7 @@ public class HttpActor extends AbstractActor {
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddProduct(product), timeout);
 
-        Boolean result = null;
+        Boolean result;
         try {
             result = (Boolean) Await.result(future, timeout.duration());
             if (result) {
@@ -209,7 +211,7 @@ public class HttpActor extends AbstractActor {
         ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteProduct(product), timeout);
 
-        Boolean result = null;
+        Boolean result;
         try {
             result = (Boolean) Await.result(future, timeout.duration());
             if (result) {

@@ -1,8 +1,8 @@
 package org.bitvector.microservice2
 
-
 import akka.actor.{Actor, ActorLogging}
 import slick.driver.PostgresDriver.api._
+import slick.lifted.TableQuery
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
