@@ -8,7 +8,7 @@ function MyFunc($scope, $http) {
       };
 
       $scope.getProduct = function() {
-          $http.get('/products/99')
+          $http.get('/products/1')
               .success(function (data) {
                    $scope.product = data['name']
                })
