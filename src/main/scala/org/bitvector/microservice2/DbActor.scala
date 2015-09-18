@@ -4,8 +4,6 @@ import akka.actor.{Actor, ActorLogging}
 import slick.driver.PostgresDriver.api._
 import slick.lifted.TableQuery
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 object DbActor {
   case class Start()
   case class Stop()
@@ -27,6 +25,7 @@ object DbActor {
 class DbActor extends Actor with ActorLogging {
   import DbActor._
 
+  implicit val executionContext = context.system.dispatcher
   val settings = Settings(context.system)
   val database = Database.forConfig("service.database")
   val productsQuery = TableQuery[ProductDAO]
