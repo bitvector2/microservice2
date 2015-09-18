@@ -29,15 +29,11 @@ import java.util.concurrent.TimeUnit;
 public class HttpActor extends AbstractActor {
     private Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
-    private SettingsImpl settings = null;
-    private Undertow server = null;
-    private ObjectMapper jsonMapper;
+    private SettingsImpl settings = Settings.get(getContext().system());
+    private ObjectMapper jsonMapper = new ObjectMapper();
+    private Undertow server;
 
     public HttpActor() {
-        settings = Settings.get(getContext().system());
-        jsonMapper = new ObjectMapper();
-        jsonMapper.registerModule(new DefaultScalaModule());
-
         receive(ReceiveBuilder
                         .match(Start.class, this::doStart)
                         .match(Stop.class, this::doStop)
@@ -47,6 +43,8 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doStart(Start msg) {
+        jsonMapper.registerModule(new DefaultScalaModule());
+
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", exchange -> exchange.dispatch(this::doGetAllProducts))
                 .add(Methods.GET, "/products/{id}", exchange -> exchange.dispatch(this::doGetProduct))

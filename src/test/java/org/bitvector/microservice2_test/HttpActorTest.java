@@ -86,46 +86,46 @@ public class HttpActorTest {
         RestAssured.baseURI = "http://127.0.0.1";
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenEmptyProductsWhenGetAllThenRespondWith200AndJsonContentType() {
         emptyProducts();
         when().get("/products").then().contentType("application/json").statusCode(200);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenEmptyProductsWhenGetAllThenRespondWithEmplyJsonList() {
         emptyProducts();
         when().get("/products").then().body("$", Matchers.empty());
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenEmptyProductsWhenGetByIdThenRespondWith404() {
         emptyProducts();
         when().get("/products/0").then().statusCode(404);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenAddProductWhenGetAllThenRespondWithJsonList() {
         emptyProducts();
         String name = addProduct();
         when().get("/products").then().body("name", hasItem(name));
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenAddProductWhenGetByIdThenRespondWith200AndJsonContentType() {
         emptyProducts();
         addProduct();
         when().get("/products/1").then().contentType("application/json").statusCode(200);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenAddProductWhenGetByIdThenRespondWithJsonDict() {
         emptyProducts();
         String name = addProduct();
         when().get("/products/1").then().body("name", equalTo(name));
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenAddProductWhenPutThenRespondWith200() {
         emptyProducts();
         addProduct();
@@ -133,21 +133,21 @@ public class HttpActorTest {
         given().contentType("application/json").body(json).when().put("/products/1").then().statusCode(200);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenAddProductWhenDeleteThenRespondWith200() {
         emptyProducts();
         addProduct();
         when().delete("/products/1").then().statusCode(200);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenEmptyProductsWhenPostThenRespondWith200() {
         emptyProducts();
         String json = "{\"name\":\"" + UUID.randomUUID().toString() + "\"}";
         given().contentType("application/json").body(json).when().post("/products").then().statusCode(200);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void givenEmptyProductsWhenDeleteThenRespondWith404() {
         emptyProducts();
         when().delete("/products/1").then().statusCode(404);
