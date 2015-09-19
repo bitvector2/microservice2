@@ -31,6 +31,7 @@ public class HttpActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private SettingsImpl settings = Settings.get(getContext().system());
     private ObjectMapper jsonMapper = new ObjectMapper();
+    private ActorSelection dbActorSel = context().actorSelection("../DbActor");
     private Undertow server;
 
     public HttpActor() {
@@ -70,145 +71,42 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doGetAllProducts(HttpServerExchange exchange) {
-        ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
-
-        String jsonString = null;
-        try {
-            DbActor.AllProducts result = (DbActor.AllProducts) Await.result(future, timeout.duration());
-            jsonString = jsonMapper.writeValueAsString(result.products());
-        } catch (Exception e) {
-            log.error("Failed to materialize Product(s): " + e.getMessage());
-        }
-
-        if (jsonString == null) {
-            exchange.setStatusCode(500);
-            exchange.getResponseSender().close();
-        } else if ("null".equals(jsonString)) {
-            exchange.setStatusCode(404);
-            exchange.getResponseSender().close();
-        } else {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=utf-8");
-            exchange.getResponseSender().send(jsonString);
-        }
+        sendProductOutput(future, exchange);
     }
 
     private void doGetProduct(HttpServerExchange exchange) {
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
-        ActorSelection dbActorSel = context().actorSelection("../DbActor");
+
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProduct(id), timeout);
-
-        String jsonString = null;
-        try {
-            DbActor.AProduct result = (DbActor.AProduct) Await.result(future, timeout.duration());
-            jsonString = jsonMapper.writeValueAsString(result.product());
-        } catch (Exception e) {
-            log.error("Failed to materialize Product(s): " + e.getMessage());
-        }
-
-        if (jsonString == null) {
-            exchange.setStatusCode(500);
-            exchange.getResponseSender().close();
-        } else if ("null".equals(jsonString)) {
-            exchange.setStatusCode(404);
-            exchange.getResponseSender().close();
-        } else {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=utf-8");
-            exchange.getResponseSender().send(jsonString);
-        }
+        sendProductOutput(future, exchange);
     }
 
     private void doUpdateProduct(HttpServerExchange exchange) {
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
-        exchange.startBlocking();
-        InputStream inputStream = exchange.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder body = new StringBuilder();
-
-        Product product;
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                body.append(line);
-            }
-            reader.close();
-            product = jsonMapper.readValue(body.toString(), Product.class);
-        } catch (Exception e) {
-            log.error("Failed to read request body: " + e.getMessage());
-            exchange.setStatusCode(400);
-            exchange.getResponseSender().close();
-            return;
-        }
-
+        Product product = receiveProductInput(exchange);
         product.id_$eq(id);
-        ActorSelection dbActorSel = context().actorSelection("../DbActor");
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateProduct(product), timeout);
 
-        Boolean result;
-        try {
-            result = (Boolean) Await.result(future, timeout.duration());
-            if (result) {
-                exchange.getResponseSender().close();
-            } else {
-                log.error("Failed to complete operation.");
-                exchange.setStatusCode(500);
-                exchange.getResponseSender().close();
-            }
-        } catch (Exception e) {
-            log.error("Failed to complete operation: " + e.getMessage());
-            exchange.setStatusCode(500);
-            exchange.getResponseSender().close();
-        }
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateProduct(product), timeout);
+        sendBooleanOutput(future, exchange);
     }
 
     private void doAddProduct(HttpServerExchange exchange) {
-        exchange.startBlocking();
-        InputStream inputStream = exchange.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder body = new StringBuilder();
+        Product product = receiveProductInput(exchange);
 
-        Product product;
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                body.append(line);
-            }
-            reader.close();
-            product = jsonMapper.readValue(body.toString(), Product.class);
-        } catch (Exception e) {
-            log.error("Failed to read request body: " + e.getMessage());
-            exchange.setStatusCode(400);
-            exchange.getResponseSender().close();
-            return;
-        }
-
-        ActorSelection dbActorSel = context().actorSelection("../DbActor");
         Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddProduct(product), timeout);
-
-        Boolean result;
-        try {
-            result = (Boolean) Await.result(future, timeout.duration());
-            if (result) {
-                exchange.getResponseSender().close();
-            } else {
-                log.error("Failed to complete operation.");
-                exchange.setStatusCode(500);
-                exchange.getResponseSender().close();
-            }
-        } catch (Exception e) {
-            log.error("Failed to complete operation: " + e.getMessage());
-            exchange.setStatusCode(500);
-            exchange.getResponseSender().close();
-        }
+        sendBooleanOutput(future, exchange);
     }
 
     private void doDeleteProduct(HttpServerExchange exchange) {
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
-
         Product product = new Product(id, null);
-        ActorSelection dbActorSel = context().actorSelection("../DbActor");
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteProduct(product), timeout);
 
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteProduct(product), timeout);
+        sendBooleanOutput(future, exchange);
+    }
+
+    private void sendBooleanOutput(Future<Object> future, HttpServerExchange exchange) {
         Boolean result;
         try {
             result = (Boolean) Await.result(future, timeout.duration());
@@ -224,6 +122,55 @@ public class HttpActor extends AbstractActor {
             exchange.setStatusCode(500);
             exchange.getResponseSender().close();
         }
+    }
+
+    private void sendProductOutput(Future<Object> future, HttpServerExchange exchange) {
+        String jsonString = null;
+        try {
+            Object obj = Await.result(future, timeout.duration());
+            if (obj instanceof DbActor.AllProducts) {
+                DbActor.AllProducts result = (DbActor.AllProducts) obj;
+                jsonString = jsonMapper.writeValueAsString(result.products());
+            } else if (obj instanceof DbActor.AProduct) {
+                DbActor.AProduct result = (DbActor.AProduct) obj;
+                jsonString = jsonMapper.writeValueAsString(result.product());
+            }
+        } catch (Exception e) {
+            log.error("Failed to materialize Product(s): " + e.getMessage());
+        }
+
+        if (jsonString == null) {
+            exchange.setStatusCode(500);
+            exchange.getResponseSender().close();
+        } else if ("null".equals(jsonString)) {
+            exchange.setStatusCode(404);
+            exchange.getResponseSender().close();
+        } else {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=utf-8");
+            exchange.getResponseSender().send(jsonString);
+        }
+    }
+
+    private Product receiveProductInput(HttpServerExchange exchange) {
+        exchange.startBlocking();
+        InputStream inputStream = exchange.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder body = new StringBuilder();
+
+        Product product = null;
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                body.append(line);
+            }
+            reader.close();
+            product = jsonMapper.readValue(body.toString(), Product.class);
+        } catch (Exception e) {
+            log.error("Failed to read request body: " + e.getMessage());
+            exchange.setStatusCode(400);
+            exchange.getResponseSender().close();
+        }
+        return product;
     }
 
     public static class Start implements Serializable {
