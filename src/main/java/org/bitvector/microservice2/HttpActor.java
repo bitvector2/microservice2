@@ -31,7 +31,7 @@ public class HttpActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private SettingsImpl settings = Settings.get(getContext().system());
     private ObjectMapper jsonMapper = new ObjectMapper();
-    private ActorSelection dbActorSel = context().actorSelection("../DbActor");
+    private ActorSelection dbActorSel;
     private Undertow server;
 
     public HttpActor() {
@@ -45,6 +45,7 @@ public class HttpActor extends AbstractActor {
 
     private void doStart(Start msg) {
         jsonMapper.registerModule(new DefaultScalaModule());
+        dbActorSel = context().actorSelection("../DbActor");
 
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", exchange -> exchange.dispatch(this::doGetAllProducts))
