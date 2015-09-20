@@ -4,7 +4,7 @@ import akka.actor.{ActorSystem, Props}
 import org.slf4j.LoggerFactory
 
 object Main {
-  def main(args: Array[String]) {
+  def main(args: Array[String]) = {
     val logger = LoggerFactory.getLogger(this.getClass.getName)
     logger.info("Starting Actor Initialization")
 

@@ -3,18 +3,13 @@ package org.bitvector.microservice2
 import akka.actor.{Actor, ActorLogging, Props}
 
 object MgrActor {
-
   case class Start()
-
   case class Stop()
-
 }
 
 class MgrActor extends Actor with ActorLogging {
-
   import MgrActor._
 
-  val settings = Settings(context.system)
   val httpActor = context.actorOf(Props[HttpActor], "HttpActor")
   val dbActor = context.actorOf(Props[DbActor], "DbActor")
 
@@ -28,7 +23,7 @@ class MgrActor extends Actor with ActorLogging {
     log.info("MgrActor received start")
 
     context.watch(httpActor)
-    httpActor ! new HttpActor.Start()
+    httpActor ! new HttpActor.Start() // new() needed as object is Java class
 
     context.watch(dbActor)
     dbActor ! DbActor.Start()
@@ -37,7 +32,7 @@ class MgrActor extends Actor with ActorLogging {
   def doStop() = {
     log.info("MgrActor received stop")
 
-    httpActor ! new HttpActor.Stop()
+    httpActor ! new HttpActor.Stop() // new() needed as object is Java class
     context.unwatch(httpActor)
 
     dbActor ! DbActor.Stop()
