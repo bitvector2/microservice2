@@ -44,6 +44,8 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doStart(Start msg) {
+        log.info("HttpActor received start");
+
         jsonMapper.registerModule(new DefaultScalaModule());
         dbActorSel = context().actorSelection("../DbActor");
 
@@ -68,6 +70,8 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doStop(Stop msg) {
+        log.info("HttpActor received stop");
+
         server.stop();
     }
 

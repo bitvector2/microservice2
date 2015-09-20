@@ -38,16 +38,17 @@ class DbActor extends Actor with ActorLogging {
     case AddProduct(product) => this.doAddProduct(product)
     case UpdateProduct(product) => this.doUpdateProduct(product)
     case DeleteProduct(product) => this.doDeleteProduct(product)
-    case _ => log.info("received unknown message")
+    case _ => log.error("DbActor received unknown message")
   }
 
   def doStart() = {
-    log.info("received start")
+    log.info("DbActor received start")
   }
 
   def doStop() = {
+    log.info("DbActor received stop")
+
     database.close()
-    log.info("received stop")
   }
 
   def doGetAllProducts() = {
