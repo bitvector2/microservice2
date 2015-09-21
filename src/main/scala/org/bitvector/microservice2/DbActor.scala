@@ -11,15 +11,15 @@ object DbActor {
 
   case class AllProducts(products: Seq[Product])
 
-  case class GetProduct(id: Long)
+  case class GetAProduct(id: Long)
 
   case class AProduct(product: Product)
 
-  case class AddProduct(product: Product)
+  case class AddAProduct(product: Product)
 
-  case class UpdateProduct(product: Product)
+  case class UpdateAProduct(product: Product)
 
-  case class DeleteProduct(product: Product)
+  case class DeleteAProduct(product: Product)
 }
 
 class DbActor extends Actor with ActorLogging {
@@ -34,10 +34,10 @@ class DbActor extends Actor with ActorLogging {
     case Start() => this.doStart()
     case Stop() => this.doStop()
     case GetAllProducts() => this.doGetAllProducts()
-    case GetProduct(id) => this.doGetProduct(id)
-    case AddProduct(product) => this.doAddProduct(product)
-    case UpdateProduct(product) => this.doUpdateProduct(product)
-    case DeleteProduct(product) => this.doDeleteProduct(product)
+    case GetAProduct(id) => this.doGetAProduct(id)
+    case AddAProduct(product) => this.doAddAProduct(product)
+    case UpdateAProduct(product) => this.doUpdateAProduct(product)
+    case DeleteAProduct(product) => this.doDeleteAProduct(product)
     case _ => log.error("DbActor received unknown message")
   }
 
@@ -59,7 +59,7 @@ class DbActor extends Actor with ActorLogging {
     }
   }
 
-  def doGetProduct(id: Long) = {
+  def doGetAProduct(id: Long) = {
     val caller = sender()
     val future = database.run(productsQuery.filter(p => p.id === id).result)
     future.onSuccess {
@@ -67,7 +67,7 @@ class DbActor extends Actor with ActorLogging {
     }
   }
 
-  def doAddProduct(product: Product) = {
+  def doAddAProduct(product: Product) = {
     val caller = sender()
     val future = database.run(productsQuery += product)
     future.onSuccess {
@@ -75,7 +75,7 @@ class DbActor extends Actor with ActorLogging {
     }
   }
 
-  def doUpdateProduct(product: Product) = {
+  def doUpdateAProduct(product: Product) = {
     val caller = sender()
     val future = database.run((for {p <- productsQuery if p.id === product.id} yield p.name).update(product.name))
     future.onSuccess {
@@ -83,7 +83,7 @@ class DbActor extends Actor with ActorLogging {
     }
   }
 
-  def doDeleteProduct(product: Product) = {
+  def doDeleteAProduct(product: Product) = {
     val caller = sender()
     val future = database.run(productsQuery.filter(p => p.id === product.id).delete)
     future.onSuccess {

@@ -51,10 +51,10 @@ public class HttpActor extends AbstractActor {
 
         RoutingHandler rootHandler = Handlers.routing()
                 .add(Methods.GET, "/products", exchange -> exchange.dispatch(this::doGetAllProducts))
-                .add(Methods.GET, "/products/{id}", exchange -> exchange.dispatch(this::doGetProduct))
-                .add(Methods.PUT, "/products/{id}", exchange -> exchange.dispatch(this::doUpdateProduct))
-                .add(Methods.POST, "/products", exchange -> exchange.dispatch(this::doAddProduct))
-                .add(Methods.DELETE, "/products/{id}", exchange -> exchange.dispatch(this::doDeleteProduct));
+                .add(Methods.GET, "/products/{id}", exchange -> exchange.dispatch(this::doGetAProduct))
+                .add(Methods.PUT, "/products/{id}", exchange -> exchange.dispatch(this::doUpdateAProduct))
+                .add(Methods.POST, "/products", exchange -> exchange.dispatch(this::doAddAProduct))
+                .add(Methods.DELETE, "/products/{id}", exchange -> exchange.dispatch(this::doDeleteAProduct));
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT(), settings.LISTEN_ADDRESS(), rootHandler)
@@ -80,34 +80,34 @@ public class HttpActor extends AbstractActor {
         sendProductOutput(future, exchange);
     }
 
-    private void doGetProduct(HttpServerExchange exchange) {
+    private void doGetAProduct(HttpServerExchange exchange) {
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
 
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetProduct(id), timeout);
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAProduct(id), timeout);
         sendProductOutput(future, exchange);
     }
 
-    private void doUpdateProduct(HttpServerExchange exchange) {
+    private void doUpdateAProduct(HttpServerExchange exchange) {
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
         Product product = receiveProductInput(exchange);
         product.id_$eq(id);
 
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateProduct(product), timeout);
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateAProduct(product), timeout);
         sendBooleanOutput(future, exchange);
     }
 
-    private void doAddProduct(HttpServerExchange exchange) {
+    private void doAddAProduct(HttpServerExchange exchange) {
         Product product = receiveProductInput(exchange);
 
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddProduct(product), timeout);
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddAProduct(product), timeout);
         sendBooleanOutput(future, exchange);
     }
 
-    private void doDeleteProduct(HttpServerExchange exchange) {
+    private void doDeleteAProduct(HttpServerExchange exchange) {
         Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
         Product product = new Product(id, null);
 
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteProduct(product), timeout);
+        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteAProduct(product), timeout);
         sendBooleanOutput(future, exchange);
     }
 
