@@ -1,37 +1,28 @@
 package org.bitvector.microservice2;
 
 import akka.actor.AbstractActor;
-import akka.actor.ActorSelection;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
-import io.undertow.util.Headers;
 import io.undertow.util.Methods;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
-import scala.concurrent.duration.Duration;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.*;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.Factory;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
 
 public class HttpActor extends AbstractActor {
-    private Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private SettingsImpl settings = Settings.get(getContext().system());
-    private ObjectMapper jsonMapper = new ObjectMapper();
-    private ActorSelection dbActorSel;
     private Undertow server;
 
     public HttpActor() {
@@ -46,15 +37,12 @@ public class HttpActor extends AbstractActor {
     private void doStart(Start msg) {
         log.info("HttpActor received start");
 
-        jsonMapper.registerModule(new DefaultScalaModule());
-        dbActorSel = context().actorSelection("../DbActor");
+        ProductCtrl productCtrl = new ProductCtrl(getContext());
 
         RoutingHandler rootHandler = Handlers.routing()
-                .add(Methods.GET, "/products", exchange -> exchange.dispatch(this::doGetAllProducts))
-                .add(Methods.GET, "/products/{id}", exchange -> exchange.dispatch(this::doGetAProduct))
-                .add(Methods.PUT, "/products/{id}", exchange -> exchange.dispatch(this::doUpdateAProduct))
-                .add(Methods.POST, "/products", exchange -> exchange.dispatch(this::doAddAProduct))
-                .add(Methods.DELETE, "/products/{id}", exchange -> exchange.dispatch(this::doDeleteAProduct));
+                .add(Methods.GET, "/login", exchange -> exchange.dispatch(this::doLogin))
+                .add(Methods.GET, "/logout", exchange -> exchange.dispatch(this::doLogout))
+                .addAll(productCtrl.getRoutingHandler());
 
         server = Undertow.builder()
                 .addHttpListener(settings.LISTEN_PORT(), settings.LISTEN_ADDRESS(), rootHandler)
@@ -75,107 +63,66 @@ public class HttpActor extends AbstractActor {
         server.stop();
     }
 
-    private void doGetAllProducts(HttpServerExchange exchange) {
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
-        sendProductOutput(future, exchange);
-    }
+    private void doLogin(HttpServerExchange exchange) {
+        Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
+        SecurityManager securityManager = factory.getInstance();
+        SecurityUtils.setSecurityManager(securityManager);
 
-    private void doGetAProduct(HttpServerExchange exchange) {
-        Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
+        Subject currentUser = SecurityUtils.getSubject();
 
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAProduct(id), timeout);
-        sendProductOutput(future, exchange);
-    }
-
-    private void doUpdateAProduct(HttpServerExchange exchange) {
-        Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
-        Product product = receiveProductInput(exchange);
-        product.id_$eq(id);
-
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateAProduct(product), timeout);
-        sendBooleanOutput(future, exchange);
-    }
-
-    private void doAddAProduct(HttpServerExchange exchange) {
-        Product product = receiveProductInput(exchange);
-
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddAProduct(product), timeout);
-        sendBooleanOutput(future, exchange);
-    }
-
-    private void doDeleteAProduct(HttpServerExchange exchange) {
-        Long id = Long.parseLong(exchange.getQueryParameters().get("id").getFirst());
-        Product product = new Product(id, null);
-
-        Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteAProduct(product), timeout);
-        sendBooleanOutput(future, exchange);
-    }
-
-    private void sendBooleanOutput(Future<Object> future, HttpServerExchange exchange) {
-        Boolean result;
-        try {
-            result = (Boolean) Await.result(future, timeout.duration());
-            if (result) {
-                exchange.getResponseSender().close();
-            } else {
-                log.error("Failed to complete operation.");
-                exchange.setStatusCode(404);
-                exchange.getResponseSender().close();
-            }
-        } catch (Exception e) {
-            log.error("Failed to complete operation: " + e.getMessage());
-            exchange.setStatusCode(500);
-            exchange.getResponseSender().close();
-        }
-    }
-
-    private void sendProductOutput(Future<Object> future, HttpServerExchange exchange) {
-        String jsonString = null;
-        try {
-            Object obj = Await.result(future, timeout.duration());
-            if (obj instanceof DbActor.AllProducts) {
-                DbActor.AllProducts result = (DbActor.AllProducts) obj;
-                jsonString = jsonMapper.writeValueAsString(result.products());
-            } else if (obj instanceof DbActor.AProduct) {
-                DbActor.AProduct result = (DbActor.AProduct) obj;
-                jsonString = jsonMapper.writeValueAsString(result.product());
-            }
-        } catch (Exception e) {
-            log.error("Failed to materialize Product(s): " + e.getMessage());
+        Session session = currentUser.getSession();
+        session.setAttribute("someKey", "aValue");
+        String value = (String) session.getAttribute("someKey");
+        if (value.equals("aValue")) {
+            log.info("Retrieved the correct value! [" + value + "]");
         }
 
-        if (jsonString == null) {
-            exchange.setStatusCode(500);
-            exchange.getResponseSender().close();
-        } else if ("null".equals(jsonString)) {
-            exchange.setStatusCode(404);
-            exchange.getResponseSender().close();
+        if (!currentUser.isAuthenticated()) {
+            UsernamePasswordToken token = new UsernamePasswordToken("lonestarr", "vespa");
+            token.setRememberMe(true);
+            try {
+                currentUser.login(token);
+            } catch (UnknownAccountException uae) {
+                log.info("There is no user with username of " + token.getPrincipal());
+            } catch (IncorrectCredentialsException ice) {
+                log.info("Password for account " + token.getPrincipal() + " was incorrect!");
+            } catch (LockedAccountException lae) {
+                log.info("The account for username " + token.getPrincipal() + " is locked.  " +
+                        "Please contact your administrator to unlock it.");
+            }
+            // ... catch more exceptions here (maybe custom ones specific to your application?
+            catch (AuthenticationException ae) {
+                //unexpected condition?  error?
+            }
+        }
+
+        log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
+
+        if (currentUser.hasRole("schwartz")) {
+            log.info("May the Schwartz be with you!");
         } else {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=utf-8");
-            exchange.getResponseSender().send(jsonString);
+            log.info("Hello, mere mortal.");
         }
+
+        if (currentUser.isPermitted("lightsaber:weild")) {
+            log.info("You may use a lightsaber ring.  Use it wisely.");
+        } else {
+            log.info("Sorry, lightsaber rings are for schwartz masters only.");
+        }
+
+        if (currentUser.isPermitted("winnebago:drive:eagle5")) {
+            log.info("You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  " +
+                    "Here are the keys - have fun!");
+        } else {
+            log.info("Sorry, you aren't allowed to drive the 'eagle5' winnebago!");
+        }
+
+        currentUser.logout();
+
     }
 
-    private Product receiveProductInput(HttpServerExchange exchange) {
-        exchange.startBlocking();
-        InputStream inputStream = exchange.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder body = new StringBuilder();
+    private void doLogout(HttpServerExchange exchange) {
 
-        Product product = null;
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                body.append(line);
-            }
-            reader.close();
-            product = jsonMapper.readValue(body.toString(), Product.class);
-        } catch (Exception e) {
-            log.error("Failed to read request body: " + e.getMessage());
-            exchange.setStatusCode(400);
-            exchange.getResponseSender().close();
-        }
-        return product;
     }
 
     public static class Start implements Serializable {
