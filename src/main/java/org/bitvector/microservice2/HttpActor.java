@@ -9,16 +9,15 @@ import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
+import io.undertow.util.FlexBase64;
+import io.undertow.util.Headers;
 import io.undertow.util.Methods;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.*;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.session.Session;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.Factory;
+import io.undertow.util.StatusCodes;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.Objects;
 
 public class HttpActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -64,61 +63,32 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doLogin(HttpServerExchange exchange) {
-        Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-        SecurityManager securityManager = factory.getInstance();
-        SecurityUtils.setSecurityManager(securityManager);
-
-        Subject currentUser = SecurityUtils.getSubject();
-
-        Session session = currentUser.getSession();
-        session.setAttribute("someKey", "aValue");
-        String value = (String) session.getAttribute("someKey");
-        if (value.equals("aValue")) {
-            log.info("Retrieved the correct value! [" + value + "]");
-        }
-
-        if (!currentUser.isAuthenticated()) {
-            UsernamePasswordToken token = new UsernamePasswordToken("lonestarr", "vespa");
-            token.setRememberMe(true);
-            try {
-                currentUser.login(token);
-            } catch (UnknownAccountException uae) {
-                log.info("There is no user with username of " + token.getPrincipal());
-            } catch (IncorrectCredentialsException ice) {
-                log.info("Password for account " + token.getPrincipal() + " was incorrect!");
-            } catch (LockedAccountException lae) {
-                log.info("The account for username " + token.getPrincipal() + " is locked.  " +
-                        "Please contact your administrator to unlock it.");
+        try {
+            String[] authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION).split(" ");
+            if (!Objects.equals(authorizationHeader[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
+                throw new Exception("Bad Authentication Method");
             }
-            // ... catch more exceptions here (maybe custom ones specific to your application?
-            catch (AuthenticationException ae) {
-                //unexpected condition?  error?
+
+            ByteBuffer buffer = FlexBase64.decode(authorizationHeader[1]);
+            String[] credentials = new String(buffer.array(), Charset.forName("utf-8")).split(":");
+            log.info("'" + credentials[0] + "'" + " " + "'" + credentials[1] + "'");
+            if (!Objects.equals(credentials[0].trim(), "stevel")) {
+                throw new Exception("Bad User Name");
             }
+            if (!Objects.equals(credentials[1].trim(), "stevel")) {
+                throw new Exception("Bad Password");
+            }
+
+            log.info("Got logged in: " + credentials[0]);
+            // Do other stuff?
+            exchange.setStatusCode(StatusCodes.OK);
+            exchange.getResponseSender().close();
+        } catch (Exception e) {
+            log.error("Got kicked out: " + e.getMessage());
+            exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
+            exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, Headers.BASIC.toString() + " " + "realm=\"Login Required\"");
+            exchange.getResponseSender().close();
         }
-
-        log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
-
-        if (currentUser.hasRole("schwartz")) {
-            log.info("May the Schwartz be with you!");
-        } else {
-            log.info("Hello, mere mortal.");
-        }
-
-        if (currentUser.isPermitted("lightsaber:weild")) {
-            log.info("You may use a lightsaber ring.  Use it wisely.");
-        } else {
-            log.info("Sorry, lightsaber rings are for schwartz masters only.");
-        }
-
-        if (currentUser.isPermitted("winnebago:drive:eagle5")) {
-            log.info("You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  " +
-                    "Here are the keys - have fun!");
-        } else {
-            log.info("Sorry, you aren't allowed to drive the 'eagle5' winnebago!");
-        }
-
-        currentUser.logout();
-
     }
 
     private void doLogout(HttpServerExchange exchange) {
