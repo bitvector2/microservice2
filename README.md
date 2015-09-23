@@ -23,6 +23,7 @@ Technology stack in use:
 * [Scala 2.11](http://scala-lang.org/)
 * [Akka](http://akka.io/)
 * [Undertow](http://undertow.io/)
+* [Shiro](http://shiro.apache.org/)
 * [Slick](http://slick.typesafe.com/)
 * [HikariCP](http://brettwooldridge.github.io/HikariCP/)
 * [Gradle](http://gradle.org/)
