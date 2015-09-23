@@ -92,6 +92,7 @@ public class HttpActor extends AbstractActor {
                 currentUser.login(token);
             }
 
+            // All forms of failure are some Exception.  Make it here and you are logged in
             log.info("Got logged in: " + credentials[0]);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
