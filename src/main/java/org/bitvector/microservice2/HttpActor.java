@@ -84,6 +84,7 @@ public class HttpActor extends AbstractActor {
             ByteBuffer buffer = FlexBase64.decode(authorizationHeader[1]);
             String[] credentials = new String(buffer.array(), Charset.forName("utf-8")).split(":");
 
+            // Send to Apache Shiro for assertion
             Subject currentUser = SecurityUtils.getSubject();
             if (!currentUser.isAuthenticated()) {
                 UsernamePasswordToken token = new UsernamePasswordToken(credentials[0].trim(), credentials[1].trim());
