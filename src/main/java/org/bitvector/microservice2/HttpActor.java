@@ -121,12 +121,12 @@ public class HttpActor extends AbstractActor {
                     .parseClaimsJws(accessToken.getValue())
                     .getBody();
 
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.getMessage());
-        }
 //            Subject currentUser = SecurityUtils.getSubject();
 //            currentUser.logout();
 
+        } catch (Exception e) {
+            log.error("Exception caught: " + e.getMessage());
+        }
     }
 
     public static class Start implements Serializable {
