@@ -24,6 +24,7 @@ Technology stack in use:
 * [Akka](http://akka.io/)
 * [Undertow](http://undertow.io/)
 * [Shiro](http://shiro.apache.org/)
+* [JJWT](https://github.com/jwtk/jjwt)
 * [Slick](http://slick.typesafe.com/)
 * [HikariCP](http://brettwooldridge.github.io/HikariCP/)
 * [Gradle](http://gradle.org/)

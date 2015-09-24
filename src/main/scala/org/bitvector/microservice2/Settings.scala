@@ -6,6 +6,7 @@ import com.typesafe.config.Config
 class SettingsImpl(config: Config) extends Extension {
   val LISTEN_ADDRESS = config.getString("service.listen-address")
   val LISTEN_PORT = config.getInt("service.listen-port")
+  val SECRET_KEY = config.getString("service.secret-key")
 }
 
 object Settings extends ExtensionId[SettingsImpl] with ExtensionIdProvider {

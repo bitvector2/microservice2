@@ -4,11 +4,15 @@ import akka.actor.AbstractActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
+import io.undertow.server.handlers.Cookie;
 import io.undertow.util.FlexBase64;
 import io.undertow.util.Headers;
 import io.undertow.util.Methods;
@@ -49,8 +53,8 @@ public class HttpActor extends AbstractActor {
         ProductCtrl productCtrl = new ProductCtrl(getContext());
 
         RoutingHandler rootHandler = Handlers.routing()
-                .add(Methods.GET, "/login", exchange -> exchange.dispatch(this::doLogin))
                 .add(Methods.GET, "/logout", exchange -> exchange.dispatch(this::doLogout))
+                .add(Methods.GET, "/login", exchange -> exchange.dispatch(this::doLogin))
                 .addAll(productCtrl.getRoutingHandler());
 
         server = Undertow.builder()
@@ -77,7 +81,7 @@ public class HttpActor extends AbstractActor {
             // Header value looks like "Basic c3RldmVsOmZ1Y2tvZmY="
             String[] authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION).split(" ");
             if (!Objects.equals(authorizationHeader[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
-                throw new Exception("Bad Authentication Method");
+                throw new Exception("Bad Authentication Scheme");
             }
 
             // Decoded credentials look like "stevel:fuckoff"
@@ -92,12 +96,16 @@ public class HttpActor extends AbstractActor {
                 currentUser.login(token);
             }
 
-            // All forms of failure are some Exception.  Make it here and you are logged in
-            log.info("Got logged in: " + credentials[0]);
+            // All forms of failure are some Exception.  Make it here and you are logged in and get a JWT Cookie.
+            String jwt = Jwts.builder()
+                    .setSubject(currentUser.getPrincipal().toString())
+                    .signWith(SignatureAlgorithm.HS512, settings.SECRET_KEY())
+                    .compact();
+
+            exchange.getResponseHeaders().put(Headers.SET_COOKIE, "access_token=" + jwt + "; " + "HttpOnly; ");
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
-            log.error("Got kicked out: " + e.getMessage());
             exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
             exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, Headers.BASIC.toString() + " " + "realm=\"Login Required\"");
             exchange.getResponseSender().close();
@@ -105,8 +113,20 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doLogout(HttpServerExchange exchange) {
-        Subject currentUser = SecurityUtils.getSubject();
-        currentUser.logout();
+        try {
+            Cookie accessToken = exchange.getRequestCookies().get("access_token");
+
+            Claims body = Jwts.parser()
+                    .setSigningKey(settings.SECRET_KEY())
+                    .parseClaimsJws(accessToken.getValue())
+                    .getBody();
+
+        } catch (Exception e) {
+            log.error("Exception caught: " + e.getMessage());
+        }
+//            Subject currentUser = SecurityUtils.getSubject();
+//            currentUser.logout();
+
     }
 
     public static class Start implements Serializable {
