@@ -77,6 +77,7 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doLogin(HttpServerExchange exchange) {
+        // https://stormpath.com/blog/where-to-store-your-jwts-cookies-vs-html5-web-storage/
         try {
             // Header value looks like "Basic c3RldmVsOmZ1Y2tvZmY="
             String[] authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION).split(" ");
