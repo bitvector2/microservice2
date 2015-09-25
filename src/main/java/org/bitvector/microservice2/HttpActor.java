@@ -79,6 +79,7 @@ public class HttpActor extends AbstractActor {
 
     private void doLogin(HttpServerExchange exchange) {
         try {
+            // Collect the subject's principal and credential via HTTP Basic authentication.
             String[] schemeAndValue = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION).split(" ");
             if (!Objects.equals(schemeAndValue[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
                 throw new Exception("Bad Authentication Scheme");
@@ -86,7 +87,7 @@ public class HttpActor extends AbstractActor {
             byte[] buffer = Base64.getDecoder().decode(schemeAndValue[1]);
             String[] principleAndCredential = new String(buffer, Charset.forName("utf-8")).split(":");
 
-            // Send to Apache Shiro for assertion
+            // Verify the subject's principal and credential
             Subject currentUser = SecurityUtils.getSubject();
             if (!currentUser.isAuthenticated()) {
                 UsernamePasswordToken token = new UsernamePasswordToken(principleAndCredential[0].trim(), principleAndCredential[1].trim());
@@ -94,12 +95,13 @@ public class HttpActor extends AbstractActor {
                 currentUser.login(token);
             }
 
-            // Make it here and you are logged in and get a Cookie+JWT.
+            // Make it here and you are logged in.  You get a Cookie with a JWT inside.
             Date jwtExpireAt = new Date(System.currentTimeMillis() + 2 * 1000);
             Date cookieExpireAt = new Date(System.currentTimeMillis() + 3600 * 1000);
             String jwt = Jwts.builder()
                     .setSubject(currentUser.getPrincipal().toString())
                     .setExpiration(jwtExpireAt)
+                    .setIssuer(this.getClass().getPackage().getName())
                     .signWith(SignatureAlgorithm.HS512, Base64.getDecoder().decode(settings.SECRET_KEY()))
                     .compact();
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
@@ -122,12 +124,13 @@ public class HttpActor extends AbstractActor {
         try {
             Cookie accessTokenCookie = exchange.getRequestCookies().get("access_token");
 
-            Claims body = Jwts.parser()
+            Claims claims = Jwts.parser()
                     .setSigningKey(Base64.getDecoder().decode(settings.SECRET_KEY()))
                     .parseClaimsJws(accessTokenCookie.getValue())
                     .getBody();
 
             // FIXME
+            System.out.println();
 
         } catch (Exception e) {
             e.printStackTrace();
