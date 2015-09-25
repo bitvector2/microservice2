@@ -13,7 +13,7 @@ import io.undertow.UndertowOptions;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.Cookie;
-import io.undertow.util.FlexBase64;
+import io.undertow.util.Cookies;
 import io.undertow.util.Headers;
 import io.undertow.util.Methods;
 import io.undertow.util.StatusCodes;
@@ -25,8 +25,8 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.Factory;
 
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Objects;
 
 public class HttpActor extends AbstractActor {
@@ -77,56 +77,56 @@ public class HttpActor extends AbstractActor {
     }
 
     private void doLogin(HttpServerExchange exchange) {
-        // https://stormpath.com/blog/where-to-store-your-jwts-cookies-vs-html5-web-storage/
         try {
-            // Header value looks like "Basic c3RldmVsOmZ1Y2tvZmY="
-            String[] authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION).split(" ");
-            if (!Objects.equals(authorizationHeader[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
+            String[] schemeAndValue = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION).split(" ");
+            if (!Objects.equals(schemeAndValue[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
                 throw new Exception("Bad Authentication Scheme");
             }
-
-            // Decoded credentials look like "stevel:fuckoff"
-            ByteBuffer buffer = FlexBase64.decode(authorizationHeader[1]);
-            String[] credentials = new String(buffer.array(), Charset.forName("utf-8")).split(":");
+            byte[] buffer = Base64.getDecoder().decode(schemeAndValue[1]);
+            String[] principleAndCredential = new String(buffer, Charset.forName("utf-8")).split(":");
 
             // Send to Apache Shiro for assertion
             Subject currentUser = SecurityUtils.getSubject();
             if (!currentUser.isAuthenticated()) {
-                UsernamePasswordToken token = new UsernamePasswordToken(credentials[0].trim(), credentials[1].trim());
+                UsernamePasswordToken token = new UsernamePasswordToken(principleAndCredential[0].trim(), principleAndCredential[1].trim());
                 token.setRememberMe(true);
                 currentUser.login(token);
             }
 
-            // All forms of failure are some Exception.  Make it here and you are logged in and get a JWT Cookie.
+            // Make it here and you are logged in and get a Cookie/JWT.
             String jwt = Jwts.builder()
                     .setSubject(currentUser.getPrincipal().toString())
-                    .signWith(SignatureAlgorithm.HS512, settings.SECRET_KEY())
+                    .signWith(SignatureAlgorithm.HS512, Base64.getDecoder().decode(settings.SECRET_KEY()))
                     .compact();
+            Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";").setHttpOnly(true);
 
-            exchange.getResponseHeaders().put(Headers.SET_COOKIE, "access_token=" + jwt + "; " + "HttpOnly; ");
+            exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
+            e.printStackTrace();
             exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
-            exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, Headers.BASIC.toString() + " " + "realm=\"Login Required\"");
+            exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
             exchange.getResponseSender().close();
         }
     }
 
     private void doLogout(HttpServerExchange exchange) {
         try {
-            Cookie accessToken = exchange.getRequestCookies().get("access_token");
+            Cookie accessTokenCookie = exchange.getRequestCookies().get("access_token");
 
             Claims body = Jwts.parser()
-                    .setSigningKey(settings.SECRET_KEY())
-                    .parseClaimsJws(accessToken.getValue())
+                    .setSigningKey(Base64.getDecoder().decode(settings.SECRET_KEY()))
+                    .parseClaimsJws(accessTokenCookie.getValue())
                     .getBody();
 
-//            Subject currentUser = SecurityUtils.getSubject();
+            Subject currentUser = SecurityUtils.getSubject();
 //            currentUser.logout();
 
         } catch (Exception e) {
-            log.error("Exception caught: " + e.getMessage());
+            e.printStackTrace();
+            exchange.setStatusCode(StatusCodes.FORBIDDEN);
+            exchange.getResponseSender().close();
         }
     }
 
