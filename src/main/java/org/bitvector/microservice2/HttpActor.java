@@ -104,6 +104,7 @@ public class HttpActor extends AbstractActor {
                     .compact();
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
                     .setExpires(cookieExpireAt)
+                            // .setSecure(true)
                     .setHttpOnly(true);
 
             exchange.getResponseCookies().put("0", accessTokenCookie);
@@ -126,8 +127,7 @@ public class HttpActor extends AbstractActor {
                     .parseClaimsJws(accessTokenCookie.getValue())
                     .getBody();
 
-//            Subject currentUser = SecurityUtils.getSubject();
-//            currentUser.logout();
+            // FIXME
 
         } catch (Exception e) {
             e.printStackTrace();
