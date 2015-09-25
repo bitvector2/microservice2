@@ -27,6 +27,7 @@ import org.apache.shiro.util.Factory;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Objects;
 
 public class HttpActor extends AbstractActor {
@@ -93,12 +94,17 @@ public class HttpActor extends AbstractActor {
                 currentUser.login(token);
             }
 
-            // Make it here and you are logged in and get a Cookie/JWT.
+            // Make it here and you are logged in and get a Cookie+JWT.
+            Date jwtExpireAt = new Date(System.currentTimeMillis() + 2 * 1000);
+            Date cookieExpireAt = new Date(System.currentTimeMillis() + 3600 * 1000);
             String jwt = Jwts.builder()
                     .setSubject(currentUser.getPrincipal().toString())
+                    .setExpiration(jwtExpireAt)
                     .signWith(SignatureAlgorithm.HS512, Base64.getDecoder().decode(settings.SECRET_KEY()))
                     .compact();
-            Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";").setHttpOnly(true);
+            Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
+                    .setExpires(cookieExpireAt)
+                    .setHttpOnly(true);
 
             exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
@@ -120,7 +126,7 @@ public class HttpActor extends AbstractActor {
                     .parseClaimsJws(accessTokenCookie.getValue())
                     .getBody();
 
-            Subject currentUser = SecurityUtils.getSubject();
+//            Subject currentUser = SecurityUtils.getSubject();
 //            currentUser.logout();
 
         } catch (Exception e) {
