@@ -21,6 +21,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.Factory;
 
@@ -34,6 +35,7 @@ public class HttpActor extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     private SettingsImpl settings = Settings.get(getContext().system());
     private Undertow server;
+
     private Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
     private SecurityManager securityManager = factory.getInstance();
 
@@ -94,11 +96,14 @@ public class HttpActor extends AbstractActor {
                 token.setRememberMe(true);
                 currentUser.login(token);
             }
+            // Create a server side session to remember the subject
+            Session currentSession = currentUser.getSession(true);
 
-            // Make it here and you are logged in.  You get a Cookie with a JWT inside.
+            // Build a cookie with a JWT inside.
             Date jwtExpireAt = new Date(System.currentTimeMillis() + 2 * 1000);
             Date cookieExpireAt = new Date(System.currentTimeMillis() + 3600 * 1000);
             String jwt = Jwts.builder()
+                    .setId(currentSession.getId().toString())
                     .setSubject(currentUser.getPrincipal().toString())
                     .setExpiration(jwtExpireAt)
                     .setIssuer(this.getClass().getPackage().getName())
@@ -109,10 +114,12 @@ public class HttpActor extends AbstractActor {
                             // .setSecure(true)
                     .setHttpOnly(true);
 
+            // Respond to subject with Cookie
             exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
+            // Anything goes wrong then reject the subject
             e.printStackTrace();
             exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
             exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
@@ -122,17 +129,23 @@ public class HttpActor extends AbstractActor {
 
     private void doLogout(HttpServerExchange exchange) {
         try {
+            // Get the cookie back
             Cookie accessTokenCookie = exchange.getRequestCookies().get("access_token");
 
+            // Get the JWT back
             Claims claims = Jwts.parser()
                     .setSigningKey(Base64.getDecoder().decode(settings.SECRET_KEY()))
                     .parseClaimsJws(accessTokenCookie.getValue())
                     .getBody();
 
-            // FIXME
-            System.out.println();
+            // Reacquire subject from server side session
+            Serializable sessionId = claims.getId();
+            Subject currentUser = new Subject.Builder().sessionId(sessionId).buildSubject();
 
+            // Logout subject and destroy session
+            currentUser.logout();
         } catch (Exception e) {
+            // Anything goes wrong then reject the subject
             e.printStackTrace();
             exchange.setStatusCode(StatusCodes.FORBIDDEN);
             exchange.getResponseSender().close();
