@@ -97,11 +97,12 @@ public class HttpActor extends AbstractActor {
                 currentUser.login(token);
             }
             // Create a server side session to remember the subject
-            Session currentSession = currentUser.getSession(true);
+            Session currentSession = currentUser.getSession();
+            currentSession.setTimeout(24 * 3600 * 1000);
 
             // Build a cookie with a JWT inside.
-            Date jwtExpireAt = new Date(System.currentTimeMillis() + 2 * 1000);
-            Date cookieExpireAt = new Date(System.currentTimeMillis() + 3600 * 1000);
+            Date jwtExpireAt = new Date(System.currentTimeMillis() + (30 * 1000));
+            Date cookieExpireAt = new Date(System.currentTimeMillis() + (24 * 3600 * 1000));
             String jwt = Jwts.builder()
                     .setId(currentSession.getId().toString())
                     .setSubject(currentUser.getPrincipal().toString())
@@ -140,7 +141,12 @@ public class HttpActor extends AbstractActor {
 
             // Reacquire subject from server side session
             Serializable sessionId = claims.getId();
-            Subject currentUser = new Subject.Builder().sessionId(sessionId).buildSubject();
+            Subject currentUser = new Subject.Builder()
+                    .sessionId(sessionId)
+                    .buildSubject();
+            if (!Objects.equals(currentUser.getPrincipal(), claims.getSubject())) {
+                throw new Exception("No matching user");
+            }
 
             // Logout subject and destroy session
             currentUser.logout();
