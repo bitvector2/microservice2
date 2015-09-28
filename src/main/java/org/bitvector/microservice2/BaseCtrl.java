@@ -59,7 +59,7 @@ public class BaseCtrl {
             byte[] buffer = Base64.getDecoder().decode(schemeAndValue[1]);
             String[] usernameAndPassword = new String(buffer, Charset.forName("utf-8")).split(":");
             if (usernameAndPassword.length != 2) {
-                throw new BadBasicAuth("Bad principle:credential parameter");
+                throw new BadBasicAuth("Bad principle:credential authentication parameter");
             }
 
             // Verify the subject's username and password with Shiro
