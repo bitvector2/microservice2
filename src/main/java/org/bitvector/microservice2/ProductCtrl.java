@@ -43,7 +43,7 @@ public class ProductCtrl extends BaseCtrl {
             Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAllProducts(), timeout);
             sendProductOutput(future, exchange);
         } catch (Exception e) {
-            rejectSubject(exchange);
+            rejectSubject(exchange, e);
         }
     }
 
@@ -54,7 +54,7 @@ public class ProductCtrl extends BaseCtrl {
             Future<Object> future = Patterns.ask(dbActorSel, new DbActor.GetAProduct(id), timeout);
             sendProductOutput(future, exchange);
         } catch (Exception e) {
-            rejectSubject(exchange);
+            rejectSubject(exchange, e);
         }
     }
 
@@ -67,7 +67,7 @@ public class ProductCtrl extends BaseCtrl {
             Future<Object> future = Patterns.ask(dbActorSel, new DbActor.UpdateAProduct(product), timeout);
             sendBooleanOutput(future, exchange);
         } catch (Exception e) {
-            rejectSubject(exchange);
+            rejectSubject(exchange, e);
         }
     }
 
@@ -78,7 +78,7 @@ public class ProductCtrl extends BaseCtrl {
             Future<Object> future = Patterns.ask(dbActorSel, new DbActor.AddAProduct(product), timeout);
             sendBooleanOutput(future, exchange);
         } catch (Exception e) {
-            rejectSubject(exchange);
+            rejectSubject(exchange, e);
         }
     }
 
@@ -90,7 +90,7 @@ public class ProductCtrl extends BaseCtrl {
             Future<Object> future = Patterns.ask(dbActorSel, new DbActor.DeleteAProduct(product), timeout);
             sendBooleanOutput(future, exchange);
         } catch (Exception e) {
-            rejectSubject(exchange);
+            rejectSubject(exchange, e);
         }
 
     }

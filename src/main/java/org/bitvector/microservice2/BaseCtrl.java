@@ -45,23 +45,33 @@ public class BaseCtrl {
     private void doLogin(HttpServerExchange exchange) {
         try {
             // Collect the subject's username and password via HTTP basic authentication.
-            String[] schemeAndValue = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION).split(" ");
+            String authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION);
+            if (authorizationHeader == null) {
+                throw new BadBasicAuth("No HTTP authorization header");
+            }
+            String[] schemeAndValue = authorizationHeader.split(" ");
+            if (schemeAndValue.length != 2) {
+                throw new BadBasicAuth("Bad HTTP authorization header");
+            }
             if (!Objects.equals(schemeAndValue[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
-                throw new Exception("Bad authentication scheme");
+                throw new BadBasicAuth("Bad HTTP authentication scheme");
             }
             byte[] buffer = Base64.getDecoder().decode(schemeAndValue[1]);
             String[] usernameAndPassword = new String(buffer, Charset.forName("utf-8")).split(":");
+            if (usernameAndPassword.length != 2) {
+                throw new BadBasicAuth("Bad principle:credential parameter");
+            }
 
-            // Verify the subject's username and password
-            Subject currentUser = SecurityUtils.getSubject();
-            if (!currentUser.isAuthenticated()) {
+            // Verify the subject's username and password with Shiro
+            Subject currentSubject = SecurityUtils.getSubject();
+            if (!currentSubject.isAuthenticated()) {
                 UsernamePasswordToken token = new UsernamePasswordToken(usernameAndPassword[0].trim(), usernameAndPassword[1].trim());
                 token.setRememberMe(true);
-                currentUser.login(token);
+                currentSubject.login(token);
             }
 
             // Create a server side session to remember the subject
-            Session currentSession = currentUser.getSession(true);
+            Session currentSession = currentSubject.getSession(true);
             currentSession.setTimeout(3600 * 1000); // 1 hour in-activity timeout
 
             // Build a cookie with a JWT value both having 24 hr lifespan.
@@ -69,7 +79,7 @@ public class BaseCtrl {
             Date cookieExpireAt = new Date(System.currentTimeMillis() + (24 * 3600 * 1000));
             String jwt = Jwts.builder()
                     .setId(currentSession.getId().toString())
-                    .setSubject(currentUser.getPrincipal().toString())
+                    .setSubject(currentSubject.getPrincipal().toString())
                     .setExpiration(jwtExpireAt)
                     .setIssuer(this.getClass().getPackage().getName())
                     .signWith(SignatureAlgorithm.HS512, Base64.getDecoder().decode(settings.SECRET_KEY()))
@@ -83,24 +93,31 @@ public class BaseCtrl {
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
-            rejectSubject(exchange);
+            // FIXME - need to break out and handle specific exceptions accordingly - maybe
+            log.error("Caught exception: " + e.getMessage());
+            exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
+            exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
+            exchange.getResponseSender().close();
         }
     }
 
     private void doLogout(HttpServerExchange exchange) {
         try {
-            Subject currentUser = verifySubject(exchange);
-            currentUser.logout();
+            Subject currentSubject = verifySubject(exchange);
+            currentSubject.logout();
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
-            rejectSubject(exchange);
+            rejectSubject(exchange, e);
         }
     }
 
     protected Subject verifySubject(HttpServerExchange exchange) throws Exception {
         // Get the cookie back from subject
         Cookie accessTokenCookie = exchange.getRequestCookies().get("access_token");
+        if (accessTokenCookie == null) {
+            throw new BadTokenAuth("No access_token cookie");
+        }
 
         // Get the claims back from JWT
         Claims claims = Jwts.parser()
@@ -109,22 +126,36 @@ public class BaseCtrl {
                 .getBody();
 
         // Load subject from server side session
-        Subject currentUser = new Subject.Builder()
+        Subject currentSubject = new Subject.Builder()
                 .sessionId(claims.getId())
                 .buildSubject();
-        if (!Objects.equals(currentUser.getPrincipal(), claims.getSubject())) {
-            throw new Exception("No matching subject");
+        if (!Objects.equals(currentSubject.getPrincipal(), claims.getSubject())) {
+            throw new BadTokenAuth("Subject not found");
         }
-        if (!currentUser.isAuthenticated()) {
-            throw new Exception("Subject not logged in");
+        if (!currentSubject.isAuthenticated()) {
+            throw new BadTokenAuth("Subject not logged in");
         }
 
-        return currentUser;
+        return currentSubject;
     }
 
-    protected void rejectSubject(HttpServerExchange exchange) {
-        exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
-        exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
+    protected void rejectSubject(HttpServerExchange exchange, Exception e) {
+        // FIXME - need to break out and handle specific exceptions accordingly - maybe
+        log.error("Caught exception: " + e.getMessage());
+        exchange.setStatusCode(StatusCodes.TEMPORARY_REDIRECT);
+        exchange.getResponseHeaders().put(Headers.LOCATION, "/login");
         exchange.getResponseSender().close();
+    }
+
+    public static class BadBasicAuth extends Exception {
+        public BadBasicAuth(String message) {
+            super(message);
+        }
+    }
+
+    public static class BadTokenAuth extends Exception {
+        public BadTokenAuth(String message) {
+            super(message);
+        }
     }
 }
