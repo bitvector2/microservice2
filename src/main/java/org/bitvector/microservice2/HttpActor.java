@@ -81,27 +81,28 @@ public class HttpActor extends AbstractActor {
 
     private void doLogin(HttpServerExchange exchange) {
         try {
-            // Collect the subject's principal and credential via HTTP Basic authentication.
+            // Collect the subject's username and password via HTTP basic authentication.
             String[] schemeAndValue = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION).split(" ");
             if (!Objects.equals(schemeAndValue[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
-                throw new Exception("Bad Authentication Scheme");
+                throw new Exception("Bad authentication scheme");
             }
             byte[] buffer = Base64.getDecoder().decode(schemeAndValue[1]);
-            String[] principleAndCredential = new String(buffer, Charset.forName("utf-8")).split(":");
+            String[] usernameAndPassword = new String(buffer, Charset.forName("utf-8")).split(":");
 
-            // Verify the subject's principal and credential
+            // Verify the subject's username and password
             Subject currentUser = SecurityUtils.getSubject();
             if (!currentUser.isAuthenticated()) {
-                UsernamePasswordToken token = new UsernamePasswordToken(principleAndCredential[0].trim(), principleAndCredential[1].trim());
+                UsernamePasswordToken token = new UsernamePasswordToken(usernameAndPassword[0].trim(), usernameAndPassword[1].trim());
                 token.setRememberMe(true);
                 currentUser.login(token);
             }
-            // Create a server side session to remember the subject
-            Session currentSession = currentUser.getSession();
-            currentSession.setTimeout(24 * 3600 * 1000);
 
-            // Build a cookie with a JWT inside.
-            Date jwtExpireAt = new Date(System.currentTimeMillis() + (30 * 1000));
+            // Create a server side session to remember the subject
+            Session currentSession = currentUser.getSession(true);
+            currentSession.setTimeout(3600 * 1000); // 1 hour in-activity timeout
+
+            // Build a cookie with a JWT value both having 24 hr lifespan.
+            Date jwtExpireAt = new Date(System.currentTimeMillis() + (24 * 3600 * 1000));
             Date cookieExpireAt = new Date(System.currentTimeMillis() + (24 * 3600 * 1000));
             String jwt = Jwts.builder()
                     .setId(currentSession.getId().toString())
@@ -112,10 +113,9 @@ public class HttpActor extends AbstractActor {
                     .compact();
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
                     .setExpires(cookieExpireAt)
-                            // .setSecure(true)
                     .setHttpOnly(true);
 
-            // Respond to subject with Cookie
+            // Respond to subject with cookie
             exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
@@ -130,25 +130,25 @@ public class HttpActor extends AbstractActor {
 
     private void doLogout(HttpServerExchange exchange) {
         try {
-            // Get the cookie back
+            // Get the cookie back from subject
             Cookie accessTokenCookie = exchange.getRequestCookies().get("access_token");
 
-            // Get the JWT back
+            // Get the claims back from JWT
             Claims claims = Jwts.parser()
                     .setSigningKey(Base64.getDecoder().decode(settings.SECRET_KEY()))
                     .parseClaimsJws(accessTokenCookie.getValue())
                     .getBody();
 
-            // Reacquire subject from server side session
+            // Load subject from server side session
             Serializable sessionId = claims.getId();
             Subject currentUser = new Subject.Builder()
                     .sessionId(sessionId)
                     .buildSubject();
             if (!Objects.equals(currentUser.getPrincipal(), claims.getSubject())) {
-                throw new Exception("No matching user");
+                throw new Exception("No matching subject");
             }
 
-            // Logout subject and destroy session
+            // Logout subject and destroy server side session
             currentUser.logout();
         } catch (Exception e) {
             // Anything goes wrong then reject the subject
