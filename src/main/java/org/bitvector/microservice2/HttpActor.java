@@ -20,10 +20,11 @@ public class HttpActor extends AbstractActor {
     private SettingsImpl settings = Settings.get(getContext().system());
     private Undertow server;
 
-    private Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-    private SecurityManager securityManager = factory.getInstance();
-
     public HttpActor() {
+        Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
+        SecurityManager securityManager = factory.getInstance();
+        SecurityUtils.setSecurityManager(securityManager);
+
         receive(ReceiveBuilder
                         .match(Start.class, this::doStart)
                         .match(Stop.class, this::doStop)
@@ -35,10 +36,7 @@ public class HttpActor extends AbstractActor {
     private void doStart(Start msg) {
         log.info("HttpActor received start");
 
-        SecurityUtils.setSecurityManager(securityManager);
-
         ProductCtrl productCtrl = new ProductCtrl(getContext());
-
         RoutingHandler rootHandler = Handlers.routing()
                 .addAll(productCtrl.getRoutingHandler());
 

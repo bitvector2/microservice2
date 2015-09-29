@@ -93,7 +93,7 @@ public class BaseCtrl {
                     .compact();
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
                     .setExpires(cookieExpireAt)
-                    .setSecure(true)
+                    .setSecure(false)
                     .setHttpOnly(true);
 
             // Respond to subject with cookie
@@ -147,7 +147,7 @@ public class BaseCtrl {
                 .sessionId(claims.getId())
                 .buildSubject();
         if (!Objects.equals(currentSubject.getPrincipal(), claims.getSubject())) {
-            throw new BadTokenAuth("Matching subject not found");
+            throw new BadTokenAuth("No matching subject found");
         }
 
         return currentSubject;
