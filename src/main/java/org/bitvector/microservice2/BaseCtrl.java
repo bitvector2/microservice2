@@ -147,7 +147,7 @@ public class BaseCtrl {
                 .sessionId(claims.getId())
                 .buildSubject();
         if (!Objects.equals(currentSubject.getPrincipal(), claims.getSubject())) {
-            throw new BadTokenAuth("Subject not found");
+            throw new BadTokenAuth("Matching subject not found");
         }
 
         return currentSubject;
