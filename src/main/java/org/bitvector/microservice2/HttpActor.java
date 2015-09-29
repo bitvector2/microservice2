@@ -37,6 +37,7 @@ public class HttpActor extends AbstractActor {
         log.info("HttpActor received start");
 
         ProductCtrl productCtrl = new ProductCtrl(getContext());
+
         RoutingHandler rootHandler = Handlers.routing()
                 .addAll(productCtrl.getRoutingHandler());
 
