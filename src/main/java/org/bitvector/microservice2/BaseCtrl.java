@@ -44,6 +44,15 @@ public class BaseCtrl {
 
     private void doLogin(HttpServerExchange exchange) {
         try {
+            // Assert SSL was used on frontend
+            String xForwardedProtoHeader = exchange.getRequestHeaders().getFirst(Headers.X_FORWARDED_PROTO);
+            if (xForwardedProtoHeader == null) {
+                throw new BadBasicAuth("No x-forwarded-proto header");
+            }
+            if (!Objects.equals(xForwardedProtoHeader.toLowerCase().trim(), "https")) {
+                throw new BadBasicAuth("No https encryption");
+            }
+
             // Collect the subject's username and password via HTTP basic authentication.
             String authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION);
             if (authorizationHeader == null) {
@@ -54,21 +63,19 @@ public class BaseCtrl {
                 throw new BadBasicAuth("Bad HTTP authorization header");
             }
             if (!Objects.equals(schemeAndValue[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
-                throw new BadBasicAuth("Bad HTTP authentication scheme");
+                throw new BadBasicAuth("Bad authentication scheme");
             }
             byte[] buffer = Base64.getDecoder().decode(schemeAndValue[1]);
             String[] usernameAndPassword = new String(buffer, Charset.forName("utf-8")).split(":");
             if (usernameAndPassword.length != 2) {
-                throw new BadBasicAuth("Bad principle:credential authentication parameter");
+                throw new BadBasicAuth("Bad authentication parameter");
             }
 
             // Verify the subject's username and password with Shiro
             Subject currentSubject = SecurityUtils.getSubject();
-            if (!currentSubject.isAuthenticated()) {
-                UsernamePasswordToken token = new UsernamePasswordToken(usernameAndPassword[0].trim(), usernameAndPassword[1].trim());
-                token.setRememberMe(true);
-                currentSubject.login(token);
-            }
+            UsernamePasswordToken token = new UsernamePasswordToken(usernameAndPassword[0].trim(), usernameAndPassword[1].trim());
+            token.setRememberMe(true);
+            currentSubject.login(token);
 
             // Create a server side session to remember the subject
             Session currentSession = currentSubject.getSession(true);
@@ -86,6 +93,7 @@ public class BaseCtrl {
                     .compact();
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
                     .setExpires(cookieExpireAt)
+                    .setSecure(false)
                     .setHttpOnly(true);
 
             // Respond to subject with cookie
@@ -113,6 +121,15 @@ public class BaseCtrl {
     }
 
     protected Subject verifySubject(HttpServerExchange exchange) throws Exception {
+        // Assert SSL was used on frontend
+        String xForwardedProtoHeader = exchange.getRequestHeaders().getFirst(Headers.X_FORWARDED_PROTO);
+        if (xForwardedProtoHeader == null) {
+            throw new BadTokenAuth("No x-forwarded-proto header");
+        }
+        if (!Objects.equals(xForwardedProtoHeader.toLowerCase().trim(), "https")) {
+            throw new BadTokenAuth("No https encryption");
+        }
+
         // Get the cookie back from subject
         Cookie accessTokenCookie = exchange.getRequestCookies().get("access_token");
         if (accessTokenCookie == null) {
@@ -131,9 +148,6 @@ public class BaseCtrl {
                 .buildSubject();
         if (!Objects.equals(currentSubject.getPrincipal(), claims.getSubject())) {
             throw new BadTokenAuth("Subject not found");
-        }
-        if (!currentSubject.isAuthenticated()) {
-            throw new BadTokenAuth("Subject not logged in");
         }
 
         return currentSubject;
