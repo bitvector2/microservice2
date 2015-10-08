@@ -93,7 +93,7 @@ public class BaseCtrl {
                     .compact();
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
                     .setExpires(cookieExpireAt)
-                    .setSecure(false)
+                    .setSecure(true)
                     .setHttpOnly(true);
 
             // Respond to subject with cookie

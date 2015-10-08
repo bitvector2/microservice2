@@ -136,6 +136,7 @@ public class ProductCtrl extends BaseCtrl {
             exchange.getResponseSender().close();
         } else {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=utf-8");
+            exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "no-cache, no-store, must-revalidate, proxy-revalidate");
             exchange.getResponseSender().send(jsonString);
         }
     }
