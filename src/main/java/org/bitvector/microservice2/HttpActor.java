@@ -22,19 +22,15 @@ public class HttpActor extends AbstractActor {
     private Undertow server;
 
     public HttpActor() {
-        // Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-        // SecurityManager securityManager = factory.getInstance();
-
         DefaultSecurityManager securityManager = new DefaultSecurityManager(new IniRealm("classpath:shiro.ini"));
-        DefaultSessionManager sessionManager = new DefaultSessionManager();
 
+        DefaultSessionManager sessionManager = new DefaultSessionManager();
         sessionManager.setSessionDAO(new EnterpriseCacheSessionDAO());
         sessionManager.setCacheManager(new HazelcastCacheManager());
         sessionManager.setSessionValidationSchedulerEnabled(false);
 
         securityManager.setSessionManager(sessionManager);
         SecurityUtils.setSecurityManager(securityManager);
-
 
         receive(ReceiveBuilder
                         .match(Start.class, this::doStart)

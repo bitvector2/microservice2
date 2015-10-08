@@ -9,7 +9,7 @@
 
     <map name="shiro-activeSessionCache">
         <async-backup-count>1</async-backup-count>
-        <time-to-live-seconds>1800</time-to-live-seconds>
+        <time-to-live-seconds>86400</time-to-live-seconds>
     </map>
 
     <group>
