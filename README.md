@@ -5,7 +5,8 @@ Testing Akka, Undertow, Slick on a cluster of
 
 * git clone https://github.com/bitvector2/microservice2.git
 * cd microservice2
-* Edit src/main/resources/application.conf
+* Edit src/main/resources/application.conf and change service.database.url
+* Edit src/main/resources/hazelcast.xml and change <interface></interface> attribute
 * ./gradlew clean shadowJar
 * ./microservice2.sh
 
