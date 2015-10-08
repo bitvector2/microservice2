@@ -9,9 +9,10 @@ import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
 import io.undertow.server.RoutingHandler;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.util.Factory;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.realm.text.IniRealm;
+import org.apache.shiro.session.mgt.DefaultSessionManager;
+import org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO;
 
 import java.io.Serializable;
 
@@ -21,9 +22,19 @@ public class HttpActor extends AbstractActor {
     private Undertow server;
 
     public HttpActor() {
-        Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-        SecurityManager securityManager = factory.getInstance();
+        // Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
+        // SecurityManager securityManager = factory.getInstance();
+
+        DefaultSecurityManager securityManager = new DefaultSecurityManager(new IniRealm("classpath:shiro.ini"));
+        DefaultSessionManager sessionManager = new DefaultSessionManager();
+
+        sessionManager.setSessionDAO(new EnterpriseCacheSessionDAO());
+        sessionManager.setCacheManager(new HazelcastCacheManager());
+        sessionManager.setSessionValidationSchedulerEnabled(false);
+
+        securityManager.setSessionManager(sessionManager);
         SecurityUtils.setSecurityManager(securityManager);
+
 
         receive(ReceiveBuilder
                         .match(Start.class, this::doStart)
