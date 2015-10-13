@@ -34,7 +34,7 @@ public class BaseCtrl {
         settings = Settings.get(context.system());
 
         routingHandler = Handlers.routing()
-                .add(Methods.GET, "/logOut", exchange -> exchange.dispatch(this::doLogout))
+                .add(Methods.GET, "/logout", exchange -> exchange.dispatch(this::doLogout))
                 .add(Methods.GET, "/login", exchange -> exchange.dispatch(this::doLogin));
     }
 

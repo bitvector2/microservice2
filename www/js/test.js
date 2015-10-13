@@ -85,9 +85,9 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             });
     };
 
-    $scope.logIn = function () {
+    $scope.login = function () {
         $scope.error_message = "";
-        $http.post('https://www.bitvector.org:443/login', '', {
+        $http.get('https://www.bitvector.org:443/login', '', {
             cache: false,
             headers: {'Authorization': 'Basic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
         })
@@ -100,13 +100,21 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             });
     };
 
-    $scope.logOut = function () {
+    $scope.logout = function () {
         $scope.showLogIn = true;
-        delete $cookies['access_token']
-    };
+        delete $cookies['access_token'];
 
-    $scope.cancel = function () {
-        $scope.showLogIn = false;
-    }
+        $scope.error_message = "";
+        $http.get('https://www.bitvector.org:443/products', {headers: {'Cookie': $cookies['access_token'] == null ? "" : $cookies['access_token']}})
+            .success(function (data, status) {
+                $scope.products = data;
+            })
+            .error(function (data, status) {
+                $scope.error_message = data;
+                if (status == 403 || status == 401) {
+                    $scope.showLogIn = true;
+                }
+            });
+    };
 
 }]);

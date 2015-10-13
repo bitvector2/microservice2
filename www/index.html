@@ -12,69 +12,40 @@
 <body ng-controller="MyCtrl" ng-init="init()">
 <h1>Test APIs</h1>
 
-<div ng-show="error_message!=''" align="center">
-    <font color="red">{{error_message}}</font>
+<div ng-show="error_message!=''">
+    {{error_message}}
 </div>
 
-<div ng-show="showLogIn" align="center">
-    <br/>
-    <br/>
-
-    <form ng-submit="logIn()">
-        <table>
-            <tr>
-                <td>
-                    <input type="text" ng-model="credentials.username" class="ng-pristine ng-valid"
-                           placeholder="Username">
-                    <br/>
-                    <br/>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="password" ng-model="credentials.password" class="ng-pristine ng-valid"
-                           placeholder="Password">
-                    <br/>
-                    <br/>
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    <button class="btn btn-success" ng-click="setActive(true)"
-                            ng-disabled="credentials.password ==null || credentials.username ==null">
-                        Submit
-                    </button>
-                    <button class="btn btn-success" ng-click="cancel()">
-                        Cancel
-                    </button>
-                </td>
-            </tr>
-        </table>
-    </form>
+<div ng-show="showLogin">
+    <button ng-click="login()">Log Out</button>
 </div>
-<div ng-show="!showLogIn">
-    <div align="center">
+
+<div ng-show="!showLogin">
+    <div>
         <button ng-click="getAll()">Load Data</button>
     </div>
-    <div align="left">
+
+    <div>
+        <button ng-click="create()">Create</button>
+        <button ng-click="logout()">Log Out</button>
+    </div>
+
+    <br/>
+    <br/>
+
+    <div>
         <ul>
-            <li ng-repeat=" product in products">
+            <li ng-repeat="product in products">
                 {{product.name}}
                 <button ng-click="update(product)">Update</button>
                 <button ng-click="delete(product)">Delete</button>
             </li>
         </ul>
     </div>
-    <br/>
-    <hr/>
-    <div align="left">
-        <button ng-click="create()">Create</button>
-        <button ng-click="logout()">Log Out</button>
-
-    </div>
 </div>
+
 {{product}}
+
 </body>
 
 </html>
