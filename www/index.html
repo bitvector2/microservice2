@@ -17,34 +17,12 @@
 </div>
 
 <div ng-show="showLogin">
-    <button ng-click="login()">Log In</button>
+    <button ng-click="login()">Login</button>
 </div>
 
 <div ng-show="!showLogin">
-    <div>
-        <button ng-click="getAll()">Load Data</button>
-    </div>
-
-    <div>
-        <button ng-click="create()">Create</button>
-        <button ng-click="logout()">Log Out</button>
-    </div>
-
-    <br/>
-    <br/>
-
-    <div>
-        <ul>
-            <li ng-repeat="product in products">
-                {{product.name}}
-                <button ng-click="update(product)">Update</button>
-                <button ng-click="delete(product)">Delete</button>
-            </li>
-        </ul>
-    </div>
+    <button ng-click="logout()">Logout</button>
 </div>
-
-{{product}}
 
 </body>
 
