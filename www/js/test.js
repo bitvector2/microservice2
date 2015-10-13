@@ -23,8 +23,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
     $scope.logout = function () {
         $scope.error_message = "";
         $http.get('https://www.bitvector.org/logout', {
-            cache: false,
-            headers: {'Cookie': $cookies['access_token'] == null ? "" : $cookies['access_token']}
+            cache: false
         })
             .success(function (data, status) {
                 delete $cookies['access_token'];
@@ -39,8 +38,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
     $scope.getAll = function () {
         $scope.error_message = "";
         $http.get('https://www.bitvector.org:443/products', {
-            cache: false,
-            headers: {'Cookie': $cookies['access_token'] == null ? "" : $cookies['access_token']}
+            cache: false
         })
             .success(function (data, status) {
                 $scope.products = data;
