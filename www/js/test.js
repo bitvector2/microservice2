@@ -8,7 +8,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
 
     $scope.login = function () {
         $scope.error_message = "";
-        $http.get('https://www.bitvector.org/login', '', {
+        $http.get('/login', '', {
             cache: false,
             headers: {'Authorization': 'Basic ' + btoa("root:secret")}
         })
@@ -22,7 +22,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
 
     $scope.logout = function () {
         $scope.error_message = "";
-        $http.get('https://www.bitvector.org/logout', {
+        $http.get('/logout', {
             cache: false
         })
             .success(function (data, status) {
@@ -37,7 +37,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
 
     $scope.getAll = function () {
         $scope.error_message = "";
-        $http.get('https://www.bitvector.org:443/products', {
+        $http.get('/products', {
             cache: false
         })
             .success(function (data, status) {
