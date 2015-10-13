@@ -2,11 +2,43 @@ var app = angular.module('myApp', ['ngCookies']);
 
 app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($scope, $http, $cookies, $timeout) {
     $scope.init = function () {
-        $scope.showLogin = false;
+        $scope.showLogin = true;
         $scope.token = "";
         $scope.error_message = "";
+    };
 
-        $scope.getAll();
+    $scope.login = function () {
+        $scope.error_message = "";
+        $http.get('https://www.bitvector.org:443/login', '', {
+            cache: false,
+            headers: {'Authorization': 'Basic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
+        })
+            .success(function (data, status) {
+                $scope.showLogin = false;
+            })
+            .error(function (data, status) {
+                $scope.error_message = data;
+            });
+    };
+
+    $scope.logout = function () {
+        $scope.showLogin = true;
+        delete $cookies['access_token'];
+
+        $scope.error_message = "";
+        $http.get('https://www.bitvector.org:443/logout', {
+            cache: false,
+            headers: {'Cookie': $cookies['access_token'] == null ? "" : $cookies['access_token']}
+        })
+            .success(function (data, status) {
+                $scope.products = data;
+            })
+            .error(function (data, status) {
+                $scope.error_message = data;
+                if (status == 403 || status == 401) {
+                    $scope.showLogin = true;
+                }
+            });
     };
 
     $scope.getAll = function () {
@@ -76,38 +108,6 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
         $http.delete('https://www.bitvector.org:443/products/' + template['TemplateId'], {headers: {'Cookie': $cookies['access_token'] == null ? "" : $cookies['access_token']}})
             .success(function (data, status) {
                 $scope.getAll();
-            })
-            .error(function (data, status) {
-                $scope.error_message = data;
-                if (status == 403 || status == 401) {
-                    $scope.showLogin = true;
-                }
-            });
-    };
-
-    $scope.login = function () {
-        $scope.error_message = "";
-        $http.get('https://www.bitvector.org:443/login', '', {
-            cache: false,
-            headers: {'Authorization': 'Basic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
-        })
-            .success(function (data, status) {
-                $scope.showLogin = false;
-                $timeout($scope.getAll, 10)
-            })
-            .error(function (data, status) {
-                $scope.error_message = data;
-            });
-    };
-
-    $scope.logout = function () {
-        $scope.showLogin = true;
-        delete $cookies['access_token'];
-
-        $scope.error_message = "";
-        $http.get('https://www.bitvector.org:443/logout', {headers: {'Cookie': $cookies['access_token'] == null ? "" : $cookies['access_token']}})
-            .success(function (data, status) {
-                $scope.products = data;
             })
             .error(function (data, status) {
                 $scope.error_message = data;
