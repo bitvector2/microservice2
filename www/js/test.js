@@ -2,7 +2,7 @@ var app = angular.module('myApp', ['ngCookies']);
 
 app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($scope, $http, $cookies, $timeout) {
     $scope.init = function () {
-        $scope.showLogIn = false;
+        $scope.showLogin = false;
         $scope.token = "";
         $scope.error_message = "";
 
@@ -18,7 +18,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             .error(function (data, status) {
                 $scope.error_message = data;
                 if (status == 403 || status == 401) {
-                    $scope.showLogIn = true;
+                    $scope.showLogin = true;
                 }
             });
     };
@@ -41,7 +41,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             .error(function (data, status) {
                 $scope.error_message = data;
                 if (status == 403 || status == 401) {
-                    $scope.showLogIn = true;
+                    $scope.showLogin = true;
                 }
             });
 
@@ -61,7 +61,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             .error(function (data, status) {
                 $scope.error_message = data;
                 if (status == 403 || status == 401) {
-                    $scope.showLogIn = true;
+                    $scope.showLogin = true;
                 }
             });
     };
@@ -80,7 +80,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             .error(function (data, status) {
                 $scope.error_message = data;
                 if (status == 403 || status == 401) {
-                    $scope.showLogIn = true;
+                    $scope.showLogin = true;
                 }
             });
     };
@@ -92,7 +92,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             headers: {'Authorization': 'Basic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
         })
             .success(function (data, status) {
-                $scope.showLogIn = false;
+                $scope.showLogin = false;
                 $timeout($scope.getAll, 10)
             })
             .error(function (data, status) {
@@ -101,18 +101,18 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
     };
 
     $scope.logout = function () {
-        $scope.showLogIn = true;
+        $scope.showLogin = true;
         delete $cookies['access_token'];
 
         $scope.error_message = "";
-        $http.get('https://www.bitvector.org:443/products', {headers: {'Cookie': $cookies['access_token'] == null ? "" : $cookies['access_token']}})
+        $http.get('https://www.bitvector.org:443/logout', {headers: {'Cookie': $cookies['access_token'] == null ? "" : $cookies['access_token']}})
             .success(function (data, status) {
                 $scope.products = data;
             })
             .error(function (data, status) {
                 $scope.error_message = data;
                 if (status == 403 || status == 401) {
-                    $scope.showLogIn = true;
+                    $scope.showLogin = true;
                 }
             });
     };
