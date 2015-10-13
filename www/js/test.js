@@ -13,7 +13,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
         })
             .success(function (httpProvider, data, status) {
                 $scope.showLogin = false;
-                delete $http.defaults.headers.common['Authorization'];
+                $http.defaults.headers.common.Authorization = undefined;
             })
             .error(function (data, status) {
                 $scope.error_message = data;
