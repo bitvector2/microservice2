@@ -8,7 +8,9 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
 
     $scope.login = function () {
         $scope.error_message = "";
-        $http.get('/login', {headers: {'Authorization': ' xBasic ' + btoa("root:secret")}})
+        $http.get('/login', {
+            headers: {'Authorization': ' xBasic ' + btoa("root:secret")}
+        })
             .success(function (data, status) {
                 $scope.showLogin = false;
             })
