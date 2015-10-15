@@ -8,10 +8,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
 
     $scope.login = function () {
         $scope.error_message = "";
-        $http.get('/login', {
-            cache: false,
-            headers: {'Authorization': ' xBasic ' + btoa("root:secret")}
-        })
+        $http.get('/login', {headers: {'Authorization': ' xBasic ' + btoa("root:secret")}})
             .success(function (data, status) {
                 $scope.showLogin = false;
             })
@@ -22,9 +19,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
 
     $scope.logout = function () {
         $scope.error_message = "";
-        $http.get('/logout', {
-            cache: false
-        })
+        $http.get('/logout')
             .success(function (data, status) {
                 $scope.showLogin = true;
                 delete $scope.products;
@@ -36,9 +31,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
 
     $scope.getAll = function () {
         $scope.error_message = "";
-        $http.get('/products', {
-            cache: false
-        })
+        $http.get('/products')
             .success(function (data, status) {
                 $scope.products = data;
             })

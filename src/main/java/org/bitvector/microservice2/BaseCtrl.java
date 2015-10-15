@@ -98,6 +98,7 @@ public class BaseCtrl {
                     .setHttpOnly(true);
 
             // Respond to subject with cookie
+            exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "no-cache, no-store, must-revalidate, proxy-revalidate");
             exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
@@ -124,6 +125,7 @@ public class BaseCtrl {
             currentSubject.logout();
 
             // Respond to subject with nullified cookie
+            exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "no-cache, no-store, must-revalidate, proxy-revalidate");
             exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
