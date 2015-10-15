@@ -113,6 +113,15 @@ public class BaseCtrl {
         try {
             Subject currentSubject = verifySubject(exchange);
             currentSubject.logout();
+
+            Date cookieExpireAt = new Date(System.currentTimeMillis() + (24 * 3600 * 1000));
+            Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + "null" + ";")
+                    .setExpires(cookieExpireAt)
+                    .setSecure(true)
+                    .setHttpOnly(true);
+
+            // Respond to subject with nullified cookie
+            exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
@@ -128,6 +137,12 @@ public class BaseCtrl {
         }
         if (!Objects.equals(xForwardedProtoHeader.toLowerCase().trim(), "https")) {
             throw new BadTokenAuth("No https encryption");
+        }
+
+        // Verify Authorization header is nullified
+        String authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION);
+        if (!Objects.equals(authorizationHeader.toLowerCase().trim(), "null")) {
+            throw new BadTokenAuth("Authorization header not nullified");
         }
 
         // Get the cookie back from subject

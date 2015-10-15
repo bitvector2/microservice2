@@ -13,7 +13,6 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
         })
             .success(function (httpProvider, data, status) {
                 $scope.showLogin = false;
-                $http.defaults.headers.common.Authorization = "";
             })
             .error(function (data, status) {
                 $scope.error_message = data;
@@ -23,10 +22,10 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
     $scope.logout = function () {
         $scope.error_message = "";
         $http.get('/logout', {
-            cache: false
+            cache: false,
+            headers: {'Authorization': null}
         })
             .success(function (data, status) {
-                delete $cookies['access_token'];
                 $scope.showLogin = true;
             })
             .error(function (data, status) {
