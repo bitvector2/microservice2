@@ -121,7 +121,7 @@ public class BaseCtrl {
                     .setHttpOnly(true);
 
             // Respond to subject with nullified cookie
-            exchange.getResponseCookies().put("0", accessTokenCookie);
+            // exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
