@@ -141,7 +141,7 @@ public class BaseCtrl {
 
         // Verify Authorization header not set
         String authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION);
-        if (authorizationHeader == null) {
+        if (authorizationHeader != null) {
             throw new BadTokenAuth("Authorization header present");
         }
 

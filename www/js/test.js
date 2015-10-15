@@ -12,7 +12,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             cache: false,
             headers: {'Authorization': ' xBasic ' + btoa("root:secret")}
         })
-            .success(function (httpProvider, data, status) {
+            .success(function (data, status) {
                 $scope.showLogin = false;
             })
             .error(function (data, status) {
@@ -30,7 +30,6 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             })
             .error(function (data, status) {
                 $scope.error_message = data;
-
             });
     };
 
@@ -44,9 +43,6 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
             })
             .error(function (data, status) {
                 $scope.error_message = data;
-                if (status == 403 || status == 401) {
-                    $scope.showLogin = true;
-                }
             });
     };
 
