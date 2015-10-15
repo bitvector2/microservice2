@@ -53,7 +53,7 @@ public class BaseCtrl {
                 throw new BadBasicAuth("No https encryption");
             }
 
-            // Collect the subject's username and password via HTTP basic authentication.
+            // Collect the subject's username and password via HTTP xBasic scheme.
             String authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION);
             if (authorizationHeader == null) {
                 throw new BadBasicAuth("No HTTP authorization header");
