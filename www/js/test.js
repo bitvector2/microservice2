@@ -3,8 +3,7 @@ var app = angular.module('myApp', ['ngCookies']);
 app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($scope, $http, $cookies, $timeout) {
     $scope.init = function () {
         $scope.showLogin = true;
-        $scope.error_message = "";
-        $http.defaults.headers.common.Authorization = null;
+        $scope.error_message = null;
     };
 
     $scope.login = function () {
