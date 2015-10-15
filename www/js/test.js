@@ -4,13 +4,14 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
     $scope.init = function () {
         $scope.showLogin = true;
         $scope.error_message = "";
+        $http.defaults.headers.common.Authorization = null;
     };
 
     $scope.login = function () {
         $scope.error_message = "";
         $http.get('/login', '', {
             cache: false,
-            headers: {'Authorization': null}
+            headers: {'Authorization': btoa("root:secret")}
         })
             .success(function (httpProvider, data, status) {
                 $scope.showLogin = false;
