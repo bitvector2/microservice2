@@ -139,10 +139,10 @@ public class BaseCtrl {
             throw new BadTokenAuth("No https encryption");
         }
 
-        // Verify Authorization header is nullified
+        // Verify Authorization header not set
         String authorizationHeader = exchange.getRequestHeaders().getFirst(Headers.AUTHORIZATION);
-        if (!Objects.equals(authorizationHeader.toLowerCase().trim(), "null")) {
-            throw new BadTokenAuth("Authorization header not nullified");
+        if (authorizationHeader == null) {
+            throw new BadTokenAuth("Authorization header present");
         }
 
         // Get the cookie back from subject
