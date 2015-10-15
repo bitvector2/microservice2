@@ -114,7 +114,7 @@ public class BaseCtrl {
             Subject currentSubject = verifySubject(exchange);
             currentSubject.logout();
 
-            Date cookieExpireAt = new Date(System.currentTimeMillis() + (30 * 1000));
+            Date cookieExpireAt = new Date(System.currentTimeMillis() + 1000);
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + "null" + ";")
                     .setExpires(cookieExpireAt)
                     .setSecure(true)
