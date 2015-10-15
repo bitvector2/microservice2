@@ -114,14 +114,14 @@ public class BaseCtrl {
             Subject currentSubject = verifySubject(exchange);
             currentSubject.logout();
 
-            Date cookieExpireAt = new Date(System.currentTimeMillis() + (24 * 3600 * 1000));
+            Date cookieExpireAt = new Date(System.currentTimeMillis() + (30 * 1000));
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + "null" + ";")
                     .setExpires(cookieExpireAt)
                     .setSecure(true)
                     .setHttpOnly(true);
 
             // Respond to subject with nullified cookie
-            // exchange.getResponseCookies().put("0", accessTokenCookie);
+            exchange.getResponseCookies().put("0", accessTokenCookie);
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
