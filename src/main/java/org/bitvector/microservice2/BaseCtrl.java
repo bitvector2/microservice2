@@ -62,7 +62,7 @@ public class BaseCtrl {
             if (schemeAndValue.length != 2) {
                 throw new BadBasicAuth("Bad HTTP authorization header");
             }
-            if (!Objects.equals(schemeAndValue[0].toLowerCase().trim(), Headers.BASIC.toString().toLowerCase())) {
+            if (!Objects.equals(schemeAndValue[0].toLowerCase().trim(), "x" + Headers.BASIC.toString().toLowerCase())) {
                 throw new BadBasicAuth("Bad authentication scheme");
             }
             byte[] buffer = Base64.getDecoder().decode(schemeAndValue[1]);
@@ -104,7 +104,7 @@ public class BaseCtrl {
             // FIXME - need to break out and handle specific exceptions accordingly - maybe
             log.error("Caught exception: " + e.getMessage());
             exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
-            exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
+            exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, "x" + Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
             exchange.getResponseSender().close();
         }
     }

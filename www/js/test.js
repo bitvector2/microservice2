@@ -9,7 +9,8 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
     $scope.login = function () {
         $scope.error_message = "";
         $http.get('/login', '', {
-            cache: false
+            cache: false,
+            headers: {'Authorization': null}
         })
             .success(function (httpProvider, data, status) {
                 $scope.showLogin = false;
@@ -22,8 +23,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
     $scope.logout = function () {
         $scope.error_message = "";
         $http.get('/logout', {
-            cache: false,
-            headers: {'Authorization': null}
+            cache: false
         })
             .success(function (data, status) {
                 $scope.showLogin = true;
