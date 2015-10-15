@@ -25,7 +25,7 @@
     <button ng-click="logout()">Logout</button>
 </div>
 
-<div>
+<div ng-show="!showLogin">
     <ul>
         <li ng-repeat="product in products">
             {{product.name}}
