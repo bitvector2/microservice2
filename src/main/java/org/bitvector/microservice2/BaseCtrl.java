@@ -113,7 +113,6 @@ public class BaseCtrl {
     private void doLogout(HttpServerExchange exchange) {
         try {
             Subject currentSubject = verifySubject(exchange);
-            currentSubject.logout();
 
             String jwt = currentSubject.getSession().getAttribute("jwt").toString();
             Date cookieExpireAt = new Date(1000);
@@ -121,6 +120,8 @@ public class BaseCtrl {
                     .setExpires(cookieExpireAt)
                     .setSecure(true)
                     .setHttpOnly(true);
+
+            currentSubject.logout();
 
             // Respond to subject with nullified cookie
             exchange.getResponseCookies().put("0", accessTokenCookie);
