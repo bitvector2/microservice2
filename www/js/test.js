@@ -24,11 +24,15 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
         $http.get('/logout')
             .success(function (data, status) {
                 $scope.showLogin = true;
-                delete $scope.products;
+                delete $scope.credentials;
             })
             .error(function (data, status) {
                 $scope.error_message = data;
             });
+    };
+
+    $scope.cancel = function () {
+        $scope.showLogin = true;
     };
 
     $scope.getAll = function () {
