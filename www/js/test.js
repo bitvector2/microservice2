@@ -1,4 +1,4 @@
-var app = angular.module('myApp');
+var app = angular.module('myApp', []);
 
 app.controller('myCtrl', ['$scope', '$http', '$timeout', function ($scope, $http, $timeout) {
     $scope.init = function () {
