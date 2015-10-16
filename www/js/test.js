@@ -1,4 +1,4 @@
-var app = angular.module('myApp', [ngCookies]);
+var app = angular.module('myApp', ['ngCookies']);
 
 app.controller('myCtrl', ['$scope', '$cookies', '$http', function ($scope, $cookies, $http) {
     $scope.init = function () {
