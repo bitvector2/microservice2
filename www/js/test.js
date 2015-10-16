@@ -4,6 +4,9 @@ app.controller('myCtrl', ['$scope', '$cookies', '$http', function ($scope, $cook
     $scope.init = function () {
         $scope.error_message = null;
         $scope.showLogin = $cookies['showLogin'];
+        if ($scope.showLogin != true && $scope.showLogin != false) {
+            $scope.showLogin = true;
+        }
     };
 
     $scope.login = function () {
