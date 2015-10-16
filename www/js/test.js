@@ -2,9 +2,8 @@ var app = angular.module('myApp', ['ngCookies']);
 
 app.controller('myCtrl', ['$scope', '$cookies', '$http', function ($scope, $cookies, $http) {
     $scope.init = function () {
-        $scope.showLogin = true;
         $scope.error_message = null;
-        $cookies['showLogin'] = null;
+        $scope.showLogin = $cookies['showLogin'];
     };
 
     $scope.login = function () {
@@ -13,7 +12,8 @@ app.controller('myCtrl', ['$scope', '$cookies', '$http', function ($scope, $cook
             headers: {'Authorization': ' xBasic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
         })
             .success(function (data, status) {
-                $scope.showLogin = false;
+                $cookies['showLogin'] = false;
+                $scope.showLogin = $cookies['showLogin'];
                 delete $scope.credentials;
                 $scope.getProducts();
             })
@@ -26,7 +26,8 @@ app.controller('myCtrl', ['$scope', '$cookies', '$http', function ($scope, $cook
         $scope.error_message = "";
         $http.get('/logout')
             .success(function (data, status) {
-                $scope.showLogin = true;
+                $cookies['showLogin'] = true;
+                $scope.showLogin = $cookies['showLogin'];
                 delete $scope.products;
             })
             .error(function (data, status) {
@@ -35,7 +36,8 @@ app.controller('myCtrl', ['$scope', '$cookies', '$http', function ($scope, $cook
     };
 
     $scope.cancel = function () {
-        $scope.showLogin = true;
+        $cookies['showLogin'] = true;
+        $scope.showLogin = $cookies['showLogin'];
     };
 
     $scope.getProducts = function () {
