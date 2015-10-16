@@ -13,6 +13,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
         })
             .success(function (data, status) {
                 $scope.showLogin = false;
+                delete $scope.credentials;
             })
             .error(function (data, status) {
                 $scope.error_message = data;
@@ -24,7 +25,6 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
         $http.get('/logout')
             .success(function (data, status) {
                 $scope.showLogin = true;
-                delete $scope.credentials;
                 delete $scope.products;
             })
             .error(function (data, status) {
