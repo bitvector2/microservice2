@@ -33,6 +33,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
 
     $scope.cancel = function () {
         $scope.showLogin = true;
+        delete $scope.credentials;
     };
 
     $scope.getAll = function () {
