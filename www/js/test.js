@@ -1,6 +1,6 @@
-var app = angular.module('myApp', ['ngCookies']);
+var app = angular.module('myApp');
 
-app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($scope, $http, $cookies, $timeout) {
+app.controller('myCtrl', ['$scope', '$http', '$timeout', function ($scope, $http, $timeout) {
     $scope.init = function () {
         $scope.showLogin = true;
         $scope.error_message = null;
