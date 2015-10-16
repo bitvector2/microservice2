@@ -17,7 +17,6 @@
 </div>
 
 <div ng-show="showLogin">
-    <br/>
     <hr/>
 
     <form ng-submit="login()">
@@ -55,13 +54,13 @@
 </div>
 
 <div ng-show="!showLogin">
-    <br/>
     <hr/>
     <button ng-click="getAll()">getAll</button>
     <button ng-click="logout()">Logout</button>
 </div>
 
 <div ng-show="!showLogin">
+    <hr/>
     <ul>
         <li ng-repeat="product in products">
             {{product.name}}
