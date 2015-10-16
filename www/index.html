@@ -17,7 +17,41 @@
 </div>
 
 <div ng-show="showLogin">
-    <button ng-click="login()">Login</button>
+    <br/>
+    <br/>
+
+    <form ng-submit="login()">
+        <table>
+            <tr>
+                <td>
+                    <input type="text" ng-model="credentials.username" class="ng-pristine ng-valid"
+                           placeholder="Username">
+                    <br/>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="password" ng-model="credentials.password" class="ng-pristine ng-valid"
+                           placeholder="Password">
+                    <br/>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <button class="btn btn-success" ng-click="setActive(true)"
+                            ng-disabled="credentials.password ==null || credentials.username ==null">
+                        Submit
+                    </button>
+                    <button class="btn btn-success" ng-click="cancel()">
+                        Cancel
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </form>
 </div>
 
 <div ng-show="!showLogin">

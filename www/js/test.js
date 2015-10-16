@@ -9,7 +9,7 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
     $scope.login = function () {
         $scope.error_message = "";
         $http.get('/login', {
-            headers: {'Authorization': ' xBasic ' + btoa("root:secret")}
+            headers: {'Authorization': ' xBasic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
         })
             .success(function (data, status) {
                 $scope.showLogin = false;
@@ -41,5 +41,4 @@ app.controller('myCtrl', ['$scope', '$http', '$cookies', '$timeout', function ($
                 $scope.error_message = data;
             });
     };
-
 }]);
