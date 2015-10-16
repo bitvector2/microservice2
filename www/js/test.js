@@ -14,6 +14,7 @@ app.controller('myCtrl', ['$scope', '$http', '$timeout', function ($scope, $http
             .success(function (data, status) {
                 $scope.showLogin = false;
                 delete $scope.credentials;
+                $scope.getAll();
             })
             .error(function (data, status) {
                 $scope.error_message = data;
