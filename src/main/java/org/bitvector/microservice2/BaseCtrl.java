@@ -91,7 +91,6 @@ public class BaseCtrl {
                     .setIssuer(this.getClass().getPackage().getName())
                     .signWith(SignatureAlgorithm.HS512, Base64.getDecoder().decode(settings.SECRET_KEY()))
                     .compact();
-            currentSession.setAttribute("jwt", jwt);
             Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
                     .setExpires(cookieExpireAt)
                     .setSecure(true)
@@ -115,9 +114,8 @@ public class BaseCtrl {
         try {
             Subject currentSubject = verifySubject(exchange);
 
-            String jwt = currentSubject.getSession().getAttribute("jwt").toString();
             Date cookieExpireAt = new Date(1000);
-            Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + jwt + ";")
+            Cookie accessTokenCookie = Cookies.parseSetCookieHeader("access_token" + "=" + "null" + ";")
                     .setExpires(cookieExpireAt)
                     .setSecure(true)
                     .setHttpOnly(true);
