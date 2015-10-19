@@ -1,10 +1,10 @@
 var app = angular.module('myApp', []);
 
-app.controller('myCtrl', ['$scope', '$http', function ($scope, $http) {
+app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http, $window) {
     $scope.init = function () {
         $scope.error_message = null;
         $scope.showLogin = true;
-        sessionStorage.setItem('test', 'yes');
+        $window.sessionStorage.setItem('test', 'yes');
     };
 
     $scope.login = function () {
