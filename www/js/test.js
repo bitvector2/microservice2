@@ -6,14 +6,20 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
             return true;
         } else if ($window.sessionStorage.getItem('showLogin') == 'false') {
             return false;
+        } else {
+            return null;
         }
     }, function (value) {
         $scope.showLogin = value;
     });
 
+    $scope.watch($window.sessionStorage['showLogin'], function () {
+        $scope.showLogin = $window.sessionStorage['showLogin'] == 'false' ? false : true
+    });
+
     $scope.init = function () {
         $scope.error_message = null;
-        if ($window.sessionStorage.getItem('showLogin') != 'true' || $window.sessionStorage.getItem('showLogin') != 'false') {
+        if ($window.sessionStorage.getItem('showLogin') == null) {
             ($window.sessionStorage.getItem('showLogin') == 'true')
         }
     };
