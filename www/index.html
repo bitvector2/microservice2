@@ -16,8 +16,8 @@
     {{error_message}}
 </div>
 
-<div ng-show="sessionStorage.test!=''">
-    {{sessionStorage.test}}
+<div ng-show="$window.sessionStorage.getItem('test')=='yes'">
+    yes
 </div>
 
 <div ng-show="showLogin">
