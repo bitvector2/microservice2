@@ -4,7 +4,7 @@ app.controller('myCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.init = function () {
         $scope.error_message = null;
         $scope.showLogin = true;
-        sessionStorage.setItem('test', 'yes');
+        sessionStorage.setItem('test', 'test');
     };
 
     $scope.login = function () {
