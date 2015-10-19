@@ -1,10 +1,19 @@
 var app = angular.module('myApp', []);
 
 app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http, $window) {
+    $scope.$watch(function () {
+        if ($window.sessionStorage.getItem('showLogin') == 'true') {
+            return true;
+        } else if ($window.sessionStorage.getItem('showLogin') == 'false') {
+            return false;
+        }
+    }, function (value) {
+        $scope.showLogin = value;
+    });
+
     $scope.init = function () {
         $scope.error_message = null;
-        $scope.showLogin = true;
-        $window.sessionStorage.setItem('test', 'yes');
+        $window.sessionStorage.setItem('showLogin', 'true');
     };
 
     $scope.login = function () {
@@ -13,7 +22,7 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
             headers: {'Authorization': ' xBasic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
         })
             .success(function (data, status) {
-                $scope.showLogin = false;
+                $window.sessionStorage.setItem('showLogin', 'false');
                 delete $scope.credentials;
                 $scope.getProducts();
             })
@@ -26,7 +35,7 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
         $scope.error_message = "";
         $http.get('/logout')
             .success(function (data, status) {
-                $scope.showLogin = true;
+                $window.sessionStorage.setItem('showLogin', 'true');
                 delete $scope.products;
             })
             .error(function (data, status) {
