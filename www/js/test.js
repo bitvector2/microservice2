@@ -6,8 +6,9 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
             return true;
         } else if ($window.sessionStorage.getItem('showLogin') == 'false') {
             return false;
+        } else {
+            return undefined;
         }
-        return null;
     }, function (value) {
         $scope.showLogin = value;
     });
@@ -18,7 +19,7 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
 
     $scope.init = function () {
         $scope.error_message = null;
-        if ($window.sessionStorage.getItem('showLogin') == null) {
+        if ($window.sessionStorage.getItem('showLogin') == undefined) {
             ($window.sessionStorage.getItem('showLogin') == 'true')
         }
     };
