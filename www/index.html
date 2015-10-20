@@ -16,7 +16,7 @@
     {{error_message}}
 </div>
 
-<div ng-if="showLogin">
+<div ng-show="showLogin">
     <hr/>
 
     <form ng-submit="login()">
@@ -53,7 +53,7 @@
     </form>
 </div>
 
-<div ng-if="!showLogin">
+<div ng-show="!showLogin">
     <hr/>
     <button class="btn btn-success" ng-click="logout()">Logout</button>
 </div>
