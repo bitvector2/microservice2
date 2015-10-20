@@ -19,7 +19,7 @@
 <div ng-show="showLogin">
     <hr/>
 
-    <form ng-submit="login()">
+    <form>
         <table>
             <tr>
                 <td>
@@ -40,11 +40,11 @@
 
             <tr>
                 <td>
-                    <button class="btn btn-success" ng-click="setActive(true)"
+                    <button class="btn btn-primary" ng-click="login()"
                             ng-disabled="credentials.password == null || credentials.username == null">
                         Submit
                     </button>
-                    <button class="btn btn-success" ng-click="cancel()">
+                    <button class="btn" ng-click="init()">
                         Cancel
                     </button>
                 </td>
