@@ -28,7 +28,6 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
             .success(function (data, status) {
                 $window.sessionStorage.setItem('showLogin', 'false');
                 delete $scope.credentials;
-                $scope.getProducts();
             })
             .error(function (data, status) {
                 $scope.error_message = data;
@@ -40,7 +39,6 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
         $http.get('/logout')
             .success(function (data, status) {
                 $window.sessionStorage.setItem('showLogin', 'true');
-                delete $scope.products;
             })
             .error(function (data, status) {
                 $scope.error_message = data;
