@@ -14,9 +14,9 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
     });
 
     $scope.init = function () {
-        $scope.error_message = null;
+        $scope.error_message = "";
         if ($window.sessionStorage.getItem('showLogin') == undefined) {
-            $window.sessionStorage.setItem('showLogin') == 'true'
+            $window.sessionStorage.setItem('showLogin', 'true');
         }
     };
 
