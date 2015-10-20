@@ -59,8 +59,8 @@
 
 <div ng-if="!showLogin" ng-init="getProducts()">
     <hr/>
-    <ul>
-        <li ng-repeat="product in products">
+    <ul class="list-group">
+        <li class="list-group-item" ng-repeat="product in products">
             {{product.name}}
         </li>
     </ul>
