@@ -1,21 +1,22 @@
 var app = angular.module('myApp', []);
 
 app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http, $window) {
-    $scope.$watch(function () {
-        if ($window.sessionStorage.getItem('showLogin') == 'true') {
-            return true;
-        } else if ($window.sessionStorage.getItem('showLogin') == 'false') {
-            return false;
-        }
-    }, function (value) {
-        $scope.showLogin = value;
-    });
 
     $scope.init = function () {
         $scope.error_message = "";
         if (!$window.sessionStorage.hasOwnProperty('showLogin')) {
             $window.sessionStorage.setItem('showLogin', 'true');
         }
+
+        $scope.$watch(function () {
+            if ($window.sessionStorage.getItem('showLogin') == 'true') {
+                return true;
+            } else if ($window.sessionStorage.getItem('showLogin') == 'false') {
+                return false;
+            }
+        }, function (value) {
+            $scope.showLogin = value;
+        });
     };
 
     $scope.login = function () {
@@ -53,4 +54,5 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
                 $scope.error_message = data;
             });
     };
+
 }]);
