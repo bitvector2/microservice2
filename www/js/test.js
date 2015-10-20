@@ -1,14 +1,15 @@
 var app = angular.module('myApp', []);
 
-app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http, $window) {
+app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function ($scope, $rootScope, $http, $window) {
 
     $scope.init = function () {
         $scope.error_message = "";
+
         if (!$window.sessionStorage.hasOwnProperty('showLogin')) {
             $window.sessionStorage.setItem('showLogin', 'true');
         }
 
-        $scope.$watch(function () {
+        $rootScope.$watch(function () {
             if ($window.sessionStorage.getItem('showLogin') == 'true') {
                 return true;
             } else if ($window.sessionStorage.getItem('showLogin') == 'false') {
@@ -21,6 +22,7 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
 
     $scope.login = function () {
         $scope.error_message = "";
+
         $http.get('/login', {
             headers: {'Authorization': ' xBasic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
         })
@@ -35,6 +37,7 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
 
     $scope.logout = function () {
         $scope.error_message = "";
+
         $http.get('/logout')
             .success(function (data, status) {
                 $window.sessionStorage.setItem('showLogin', 'true');
@@ -46,6 +49,7 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
 
     $scope.getProducts = function () {
         $scope.error_message = "";
+
         $http.get('/products')
             .success(function (data, status) {
                 $scope.products = data;
