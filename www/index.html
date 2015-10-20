@@ -2,14 +2,14 @@
 <html ng-app="myApp">
 
 <head>
-    <title>Test APIs</title>
+    <title>API Tester</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.js"></script>
     <script src="js/test.js"></script>
 </head>
 
 <body ng-controller="myCtrl" ng-init="init()">
-<h1>Test APIs</h1>
+<h2>API Tester</h2>
 
 <div ng-if="error_message!=''">
     {{error_message}}
@@ -58,9 +58,9 @@
 </div>
 
 <div ng-if="!showLogin" ng-init="getProducts()">
-    <hr/>
-    <ul>
-        <li ng-repeat="product in products">
+    <br/>
+    <ul class="list-group">
+        <li class="list-group-item" ng-repeat="product in products">
             {{product.name}}
         </li>
     </ul>
