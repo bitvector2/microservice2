@@ -46,6 +46,7 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
     };
 
     $scope.cancel = function () {
+        $scope.error_message = "FIXME";
         $scope.showLogin = true;
     };
 
