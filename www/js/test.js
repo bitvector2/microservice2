@@ -13,14 +13,10 @@ app.controller('myCtrl', ['$scope', '$http', '$window', function ($scope, $http,
         $scope.showLogin = value;
     });
 
-    $scope.watch($window.sessionStorage['showLogin'], function () {
-        $scope.showLogin = $window.sessionStorage['showLogin'] == 'false' ? false : true
-    });
-
     $scope.init = function () {
         $scope.error_message = null;
         if ($window.sessionStorage.getItem('showLogin') == undefined) {
-            ($window.sessionStorage.getItem('showLogin') == 'true')
+            $window.sessionStorage.setItem('showLogin') == 'true'
         }
     };
 
