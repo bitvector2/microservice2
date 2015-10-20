@@ -102,6 +102,7 @@ public class BaseCtrl {
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseSender().close();
         } catch (Exception e) {
+            e.printStackTrace();
             // FIXME - need to break out and handle specific exceptions accordingly - maybe
             log.error("Caught exception: " + e.getMessage());
             exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
