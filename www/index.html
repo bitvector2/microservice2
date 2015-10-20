@@ -12,11 +12,11 @@
 <body ng-controller="myCtrl" ng-init="init()">
 <h1>Test APIs</h1>
 
-<div ng-show="error_message!=''">
+<div ng-if="error_message!=''">
     {{error_message}}
 </div>
 
-<div ng-show="showLogin">
+<div ng-if="showLogin">
     <hr/>
 
     <form ng-submit="login()">
@@ -53,12 +53,12 @@
     </form>
 </div>
 
-<div ng-show="!showLogin">
+<div ng-if="!showLogin">
     <hr/>
     <button class="btn btn-success" ng-click="logout()">Logout</button>
 </div>
 
-<div ng-show="!showLogin">
+<div ng-if="!showLogin" ng-init="getProducts()">
     <hr/>
     <ul>
         <li ng-repeat="product in products">
