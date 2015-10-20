@@ -107,7 +107,8 @@ public class BaseCtrl {
             log.error("Caught exception: " + e.getMessage());
             exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
             exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, "x" + Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
-            exchange.getResponseSender().close();
+            exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "no-cache, no-store, must-revalidate, proxy-revalidate");
+            exchange.getResponseSender().send("UNAUTHORIZED");
         }
     }
 
