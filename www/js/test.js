@@ -1,4 +1,4 @@
-var app = angular.module('myApp', ['ngTouch']);
+var app = angular.module('myApp', []);
 
 app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function ($scope, $rootScope, $http, $window) {
 
@@ -49,6 +49,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
 
     $scope.getProducts = function () {
         $scope.error_message = "";
+        $scope.products = "";
 
         $http.get('/products')
             .success(function (data, status) {
