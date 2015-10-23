@@ -58,17 +58,15 @@
 
 <div ng-if="!showLogin" ng-init="getProducts()">
     <br/>
-
     <form>
         <ul class="list-group">
         <li class="list-group-item" ng-repeat="product in products">
+            <input type="text" value="{{product.name}}">
             <button class="btn" ng-click="updateProduct()">Update</button>
             <button class="btn" ng-click="deleteProduct(product)">Delete</button>
-            <input type="text" value="{{product.name}}">
         </li>
         </ul>
     </form>
-
 </div>
 
 </body>
