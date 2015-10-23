@@ -62,7 +62,7 @@
     <ul class="list-group">
         <li class="list-group-item" ng-repeat="product in products">
             <button class="btn" ng-click="update()">Update</button>
-            <button class="btn" ng-click="delete()">Delete</button>
+            <button class="btn" ng-click="deleteProduct(product)">Delete</button>
             {{product.name}}
         </li>
     </ul>

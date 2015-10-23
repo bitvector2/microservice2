@@ -60,4 +60,17 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
+    $scope.deleteProduct = function (product) {
+        $scope.error_message = "";
+        var id = product['id'];
+
+        $http.delete('/products/' + id)
+            .success(function (data, status) {
+                $scope.getProducts();
+            })
+            .error(function (data, status) {
+                $scope.error_message = data;
+            });
+    };
+
 }]);
