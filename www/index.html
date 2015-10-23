@@ -17,7 +17,6 @@
 
 <div ng-show="showLogin">
     <hr/>
-
     <form>
         <table>
             <tr>
@@ -59,13 +58,17 @@
 
 <div ng-if="!showLogin" ng-init="getProducts()">
     <br/>
-    <ul class="list-group">
+
+    <form>
+        <ul class="list-group">
         <li class="list-group-item" ng-repeat="product in products">
-            <button class="btn" ng-click="update()">Update</button>
+            <button class="btn" ng-click="updateProduct()">Update</button>
             <button class="btn" ng-click="deleteProduct(product)">Delete</button>
-            {{product.name}}
+            <input type="text" value="{{product.name}}">
         </li>
-    </ul>
+        </ul>
+    </form>
+
 </div>
 
 </body>
