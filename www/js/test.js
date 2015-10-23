@@ -62,9 +62,8 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
 
     $scope.deleteProduct = function (product) {
         $scope.error_message = "";
-        var id = product['id'];
 
-        $http.delete('/products/' + id)
+        $http.delete('/products/' + product['id'])
             .success(function (data, status) {
                 $scope.getProducts();
             })
@@ -73,13 +72,12 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
-    $scope.updateProduct = function (product, newname) {
+    $scope.updateProduct = function (product) {
         $scope.error_message = "";
-        var id = product['id'];
-        var data = {};
-        data['name'] = newname;
+        var payload = {};
+        payload['name'] = $scope.tmp.newname;
 
-        $http.put('/products/' + id, data)
+        $http.put('/products/' + product['id'], payload)
             .success(function (data, status) {
                 $scope.getProducts();
             })
