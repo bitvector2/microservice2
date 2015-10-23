@@ -73,4 +73,19 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
+    $scope.updateProduct = function (product, newname) {
+        $scope.error_message = "";
+        var id = product['id'];
+        var data = {};
+        data['name'] = newname;
+
+        $http.put('/products/' + id, data)
+            .success(function (data, status) {
+                $scope.getProducts();
+            })
+            .error(function (data, status) {
+                $scope.error_message = data;
+            });
+    };
+
 }]);

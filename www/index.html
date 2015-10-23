@@ -61,8 +61,8 @@
     <form>
         <ul class="list-group">
         <li class="list-group-item" ng-repeat="product in products">
-            <input type="text" value="{{product.name}}">
-            <button class="btn" ng-click="updateProduct()">Update</button>
+            <input type="text" ng-model="newname" value="{{product.name}}">
+            <button class="btn" ng-click="updateProduct(product, newname)">Update</button>
             <button class="btn" ng-click="deleteProduct(product)">Delete</button>
         </li>
         </ul>
