@@ -52,7 +52,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
         var payload = {};
         payload['name'] = newname;
 
-        $http.post('/products/', payload)
+        $http.post('/products', payload)
             .success(function (data, status) {
                 $scope.getProducts();
             })
@@ -86,10 +86,10 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
-    $scope.updateProduct = function (product, newname) {
+    $scope.updateProduct = function (product, rename) {
         $scope.error_message = "";
         var payload = {};
-        payload['name'] = newname;
+        payload['name'] = rename;
 
         $http.put('/products/' + product.id, payload)
             .success(function (data, status) {
