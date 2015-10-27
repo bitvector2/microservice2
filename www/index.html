@@ -23,16 +23,12 @@
                 <td>
                     <input type="text" ng-model="credentials.username" class="ng-pristine ng-valid"
                            placeholder="Username">
-                    <br/>
-                    <br/>
                 </td>
             </tr>
             <tr>
                 <td>
                     <input type="password" ng-model="credentials.password" class="ng-pristine ng-valid"
                            placeholder="Password">
-                    <br/>
-                    <br/>
                 </td>
             </tr>
             <tr>
@@ -52,21 +48,25 @@
 
 <div ng-if="!showLogin" ng-init="readProducts()">
     <form>
-        <ul class="list-group">
-            <li class="list-group-item">
+        <table>
+            <tr>
+                <td>
                 <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid">
                 <button class="btn" ng-click="createProduct(tmp.newname)" ng-disabled="tmp.newname == null">Create
                 </button>
-            </li>
-            <li class="list-group-item" ng-repeat="product in products">
+                </td>
+            </tr>
+            <tr ng-repeat="product in products">
+                <td>
                 <input type="text" ng-model="tmp.rename[product.id]" class="ng-pristine ng-valid"
                        placeholder="{{product.name}}">
                 <button class="btn" ng-click="updateProduct(product, tmp.rename[product.id])"
                         ng-disabled="tmp.rename == null">Update
                 </button>
                 <button class="btn" ng-click="deleteProduct(product)">Delete</button>
-            </li>
-        </ul>
+                </td>
+            </tr>
+        </table>
     </form>
 </div>
 
