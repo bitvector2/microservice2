@@ -30,13 +30,13 @@ public class BaseCtrl {
     protected RoutingHandler routingHandler;
     protected LoggingAdapter log;
     protected SettingsImpl settings;
-    protected InetAddress myIP;
+    protected InetAddress whoAmI;
 
     public BaseCtrl(ActorContext context) {
         log = Logging.getLogger(context.system(), this);
         settings = Settings.get(context.system());
         try {
-            myIP = InetAddress.getLocalHost();
+            whoAmI = InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
             log.error("Caught exception: " + e.getMessage());
         }
@@ -116,7 +116,7 @@ public class BaseCtrl {
             exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
             exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, "x" + Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
             exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "no-cache, no-store, must-revalidate, proxy-revalidate");
-            exchange.getResponseSender().send("UNAUTHORIZED: " + myIP.toString() + ": " + e.getMessage());
+            exchange.getResponseSender().send("UNAUTHORIZED: " + whoAmI.toString() + ": " + e.getMessage());
         }
     }
 
@@ -188,7 +188,7 @@ public class BaseCtrl {
         exchange.setStatusCode(StatusCodes.TEMPORARY_REDIRECT);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/login");
         exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "no-cache, no-store, must-revalidate, proxy-revalidate");
-        exchange.getResponseSender().send("TEMPORARY_REDIRECT: " + myIP.toString() + ": " + e.getMessage());
+        exchange.getResponseSender().send("TEMPORARY_REDIRECT: " + whoAmI.toString() + ": " + e.getMessage());
     }
 
     public static class BadBasicAuth extends Exception {
