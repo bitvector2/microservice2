@@ -182,6 +182,7 @@ public class BaseCtrl {
     }
 
     protected void rejectSubject(HttpServerExchange exchange, Exception e) {
+        e.printStackTrace();
         // FIXME - need to break out and handle specific exceptions accordingly - maybe
         log.error("Caught exception: " + e.getMessage());
         exchange.setStatusCode(StatusCodes.TEMPORARY_REDIRECT);
