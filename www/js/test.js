@@ -52,7 +52,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
         var payload = {};
         payload['name'] = newname;
 
-        $http.put('/products/', payload)
+        $http.post('/products/', payload)
             .success(function (data, status) {
                 $scope.getProducts();
             })
