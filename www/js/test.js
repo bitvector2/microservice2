@@ -75,7 +75,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
     $scope.updateProduct = function (product) {
         $scope.error_message = "";
         var payload = {};
-        payload['name'] = $scope.tmp.newname;
+        payload['name'] = $scope.tmp.newname[product.id];
 
         $http.put('/products/' + product['id'], payload)
             .success(function (data, status) {
