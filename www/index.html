@@ -20,17 +20,17 @@
     <form>
         <table>
             <tr>
-                <br>
+                <td>
                     <input type="text" ng-model="credentials.username" class="ng-pristine ng-valid"
                            placeholder="Username">
-                </br>
+                    <br>
                 </td>
             </tr>
             <tr>
                 <td>
                     <input type="password" ng-model="credentials.password" class="ng-pristine ng-valid"
                            placeholder="Password">
-                    </br>
+                    <br>
                 </td>
             </tr>
             <tr>
@@ -66,6 +66,7 @@
                             ng-disabled="tmp.rename == null">Update
                     </button>
                     <button class="btn" ng-click="deleteProduct(product)">Delete</button>
+                    <br>
                 </td>
             </tr>
         </table>
