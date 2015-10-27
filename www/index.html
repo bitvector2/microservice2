@@ -58,8 +58,6 @@
                     <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid">
                     <button class="btn" ng-click="createProduct(tmp.newname)" ng-disabled="tmp.newname == null">Create
                     </button>
-                    <br>
-                    <br>
                 </td>
             </tr>
             <tr ng-repeat="product in products">
@@ -70,8 +68,6 @@
                             ng-disabled="tmp.rename == null">Update
                     </button>
                     <button class="btn" ng-click="deleteProduct(product)">Delete</button>
-                    <br>
-                    <br>
                 </td>
             </tr>
         </table>
