@@ -54,7 +54,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
 
         $http.post('/products', payload)
             .success(function (data, status) {
-                $scope.getProducts();
+                $scope.readProducts();
             })
             .error(function (data, status) {
                 $scope.error_message = data;
@@ -81,7 +81,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
 
         $http.put('/products/' + product.id, payload)
             .success(function (data, status) {
-                $scope.getProducts();
+                $scope.readProducts();
             })
             .error(function (data, status) {
                 $scope.error_message = data;
@@ -93,7 +93,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
 
         $http.delete('/products/' + product.id)
             .success(function (data, status) {
-                $scope.getProducts();
+                $scope.readProducts();
             })
             .error(function (data, status) {
                 $scope.error_message = data;
