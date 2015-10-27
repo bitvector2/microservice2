@@ -19,6 +19,8 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Date;
@@ -28,10 +30,16 @@ public class BaseCtrl {
     protected RoutingHandler routingHandler;
     protected LoggingAdapter log;
     protected SettingsImpl settings;
+    protected InetAddress myIP;
 
     public BaseCtrl(ActorContext context) {
         log = Logging.getLogger(context.system(), this);
         settings = Settings.get(context.system());
+        try {
+            myIP = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            log.error("Caught exception: " + e.getMessage());
+        }
 
         routingHandler = Handlers.routing()
                 .add(Methods.GET, "/logout", exchange -> exchange.dispatch(this::doLogout))
@@ -108,7 +116,7 @@ public class BaseCtrl {
             exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
             exchange.getResponseHeaders().put(Headers.WWW_AUTHENTICATE, "x" + Headers.BASIC.toString() + " " + Headers.REALM + "=" + "Login");
             exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "no-cache, no-store, must-revalidate, proxy-revalidate");
-            exchange.getResponseSender().send("UNAUTHORIZED");
+            exchange.getResponseSender().send("UNAUTHORIZED: " + myIP.toString() + ": " + e.getMessage());
         }
     }
 
