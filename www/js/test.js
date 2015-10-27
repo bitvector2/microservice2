@@ -20,11 +20,11 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
         });
     };
 
-    $scope.login = function () {
+    $scope.login = function (username, password) {
         $scope.error_message = "";
 
         $http.get('/login', {
-            headers: {'Authorization': ' xBasic ' + btoa($scope.credentials.username + ":" + $scope.credentials.password)}
+            headers: {'Authorization': ' xBasic ' + btoa(username + ":" + password)}
         })
             .success(function (data, status) {
                 $window.sessionStorage.setItem('showLogin', 'false');
@@ -63,7 +63,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
     $scope.deleteProduct = function (product) {
         $scope.error_message = "";
 
-        $http.delete('/products/' + product['id'])
+        $http.delete('/products/' + product.id)
             .success(function (data, status) {
                 $scope.getProducts();
             })
@@ -72,12 +72,12 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
-    $scope.updateProduct = function (product) {
+    $scope.updateProduct = function (product, newname) {
         $scope.error_message = "";
         var payload = {};
-        payload['name'] = $scope.tmp.newname[product.id];
+        payload['name'] = newname;
 
-        $http.put('/products/' + product['id'], payload)
+        $http.put('/products/' + product.id, payload)
             .success(function (data, status) {
                 $scope.getProducts();
             })

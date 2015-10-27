@@ -38,7 +38,7 @@
 
             <tr>
                 <td>
-                    <button class="btn btn-primary" ng-click="login()"
+                    <button class="btn btn-primary" ng-click="login(credentials.username, credentials.password)"
                             ng-disabled="credentials.password == null || credentials.username == null">
                         Submit
                     </button>
@@ -61,9 +61,9 @@
     <form>
         <ul class="list-group">
         <li class="list-group-item" ng-repeat="product in products">
-            <input type="text" ng-model="tmp.newname[product.id]" class="ng-pristine ng-valid"
+            <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid"
                    placeholder="{{product.name}}">
-            <button class="btn" ng-click="updateProduct(product)">Update</button>
+            <button class="btn" ng-click="updateProduct(product, tmp.newname)">Update</button>
             <button class="btn" ng-click="deleteProduct(product)">Delete</button>
         </li>
         </ul>
