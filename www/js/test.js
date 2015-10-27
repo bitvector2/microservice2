@@ -47,7 +47,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
-    $scope.addProduct = function (newname) {
+    $scope.createProduct = function (newname) {
         $scope.error_message = "";
         var payload = {};
         payload['name'] = newname;
@@ -61,7 +61,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
-    $scope.getProducts = function () {
+    $scope.readProducts = function () {
         $scope.error_message = "";
         $scope.products = "";
 
@@ -74,10 +74,12 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
-    $scope.deleteProduct = function (product) {
+    $scope.updateProduct = function (product, rename) {
         $scope.error_message = "";
+        var payload = {};
+        payload['name'] = rename;
 
-        $http.delete('/products/' + product.id)
+        $http.put('/products/' + product.id, payload)
             .success(function (data, status) {
                 $scope.getProducts();
             })
@@ -86,12 +88,10 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
-    $scope.updateProduct = function (product, rename) {
+    $scope.deleteProduct = function (product) {
         $scope.error_message = "";
-        var payload = {};
-        payload['name'] = rename;
 
-        $http.put('/products/' + product.id, payload)
+        $http.delete('/products/' + product.id)
             .success(function (data, status) {
                 $scope.getProducts();
             })

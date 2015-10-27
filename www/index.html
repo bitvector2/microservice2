@@ -9,6 +9,7 @@
 </head>
 
 <body ng-controller="myCtrl" ng-init="init()">
+
 <h2>API Tester</h2>
 
 <div ng-if="error_message!=''">
@@ -34,7 +35,6 @@
                     <br/>
                 </td>
             </tr>
-
             <tr>
                 <td>
                     <button class="btn btn-primary" ng-click="login(credentials.username, credentials.password)"
@@ -50,17 +50,20 @@
     </form>
 </div>
 
-<div ng-if="!showLogin" ng-init="getProducts()">
+<div ng-if="!showLogin" ng-init="readProducts()">
     <form>
         <ul class="list-group">
             <li class="list-group-item">
                 <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid">
-                <button class="btn" ng-click="addProduct(tmp.newname)">Create</button>
+                <button class="btn" ng-click="createProduct(tmp.newname)" ng-disabled="tmp.newname == null">Create
+                </button>
             </li>
             <li class="list-group-item" ng-repeat="product in products">
                 <input type="text" ng-model="tmp.rename[product.id]" class="ng-pristine ng-valid"
                        placeholder="{{product.name}}">
-                <button class="btn" ng-click="updateProduct(product, tmp.rename[product.id])">Update</button>
+                <button class="btn" ng-click="updateProduct(product, tmp.rename[product.id])"
+                        ng-disabled="tmp.rename == null">Update
+                </button>
                 <button class="btn" ng-click="deleteProduct(product)">Delete</button>
             </li>
         </ul>
