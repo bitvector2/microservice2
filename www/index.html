@@ -51,19 +51,18 @@
 </div>
 
 <div ng-if="!showLogin" ng-init="getProducts()">
-    <br/>
     <form>
         <ul class="list-group">
             <li class="list-group-item">
                 <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid">
                 <button class="btn" ng-click="addProduct(tmp.newname)">Create</button>
             </li>
-        <li class="list-group-item" ng-repeat="product in products">
-            <input type="text" ng-model="tmp.rename[product.id]" class="ng-pristine ng-valid"
-                   placeholder="{{product.name}}">
-            <button class="btn" ng-click="updateProduct(product, tmp.rename[product.id])">Update</button>
-            <button class="btn" ng-click="deleteProduct(product)">Delete</button>
-        </li>
+            <li class="list-group-item" ng-repeat="product in products">
+                <input type="text" ng-model="tmp.rename[product.id]" class="ng-pristine ng-valid"
+                       placeholder="{{product.name}}">
+                <button class="btn" ng-click="updateProduct(product, tmp.rename[product.id])">Update</button>
+                <button class="btn" ng-click="deleteProduct(product)">Delete</button>
+            </li>
         </ul>
     </form>
 </div>
