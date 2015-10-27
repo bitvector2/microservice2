@@ -186,6 +186,7 @@ public class BaseCtrl {
         log.error("Caught exception: " + e.getMessage());
         exchange.setStatusCode(StatusCodes.TEMPORARY_REDIRECT);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/login");
+        exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "no-cache, no-store, must-revalidate, proxy-revalidate");
         exchange.getResponseSender().send("TEMPORARY_REDIRECT: " + myIP.toString() + ": " + e.getMessage());
     }
 
