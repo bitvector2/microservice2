@@ -186,7 +186,7 @@ public class BaseCtrl {
         log.error("Caught exception: " + e.getMessage());
         exchange.setStatusCode(StatusCodes.TEMPORARY_REDIRECT);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/login");
-        exchange.getResponseSender().close();
+        exchange.getResponseSender().send("TEMPORARY_REDIRECT: " + myIP.toString() + ": " + e.getMessage());
     }
 
     public static class BadBasicAuth extends Exception {
