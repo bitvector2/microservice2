@@ -24,12 +24,14 @@
                     <input type="text" ng-model="credentials.username" class="ng-pristine ng-valid"
                            placeholder="Username">
                     <br>
+                    <br>
                 </td>
             </tr>
             <tr>
                 <td>
                     <input type="password" ng-model="credentials.password" class="ng-pristine ng-valid"
                            placeholder="Password">
+                    <br>
                     <br>
                 </td>
             </tr>
@@ -50,7 +52,7 @@
 
 <div ng-if="!showLogin" ng-init="readProducts()">
     <form>
-        <table>
+        <table class="table table-condensed table-striped">
             <tr>
                 <td>
                     <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid">
