@@ -47,6 +47,20 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
             });
     };
 
+    $scope.addProduct = function (newname) {
+        $scope.error_message = "";
+        var payload = {};
+        payload['name'] = newname;
+
+        $http.put('/products/', payload)
+            .success(function (data, status) {
+                $scope.getProducts();
+            })
+            .error(function (data, status) {
+                $scope.error_message = data;
+            });
+    };
+
     $scope.getProducts = function () {
         $scope.error_message = "";
         $scope.products = "";

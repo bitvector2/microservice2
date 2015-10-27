@@ -60,6 +60,10 @@
     <br/>
     <form>
         <ul class="list-group">
+            <li class="list-group-item">
+                <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid">
+                <button class="btn" ng-click="addProduct(tmp.newname)">Create</button>
+            </li>
         <li class="list-group-item" ng-repeat="product in products">
             <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid"
                    placeholder="{{product.name}}">
