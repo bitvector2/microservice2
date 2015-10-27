@@ -51,19 +51,19 @@
         <table>
             <tr>
                 <td>
-                <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid">
-                <button class="btn" ng-click="createProduct(tmp.newname)" ng-disabled="tmp.newname == null">Create
-                </button>
+                    <input type="text" ng-model="tmp.newname" class="ng-pristine ng-valid">
+                    <button class="btn" ng-click="createProduct(tmp.newname)" ng-disabled="tmp.newname == null">Create
+                    </button>
                 </td>
             </tr>
             <tr ng-repeat="product in products">
                 <td>
-                <input type="text" ng-model="tmp.rename[product.id]" class="ng-pristine ng-valid"
-                       placeholder="{{product.name}}">
-                <button class="btn" ng-click="updateProduct(product, tmp.rename[product.id])"
-                        ng-disabled="tmp.rename == null">Update
-                </button>
-                <button class="btn" ng-click="deleteProduct(product)">Delete</button>
+                    <input type="text" ng-model="tmp.rename[product.id]" class="ng-pristine ng-valid"
+                           placeholder="{{product.name}}">
+                    <button class="btn" ng-click="updateProduct(product, tmp.rename[product.id])"
+                            ng-disabled="tmp.rename == null">Update
+                    </button>
+                    <button class="btn" ng-click="deleteProduct(product)">Delete</button>
                 </td>
             </tr>
         </table>
@@ -71,7 +71,13 @@
 </div>
 
 <div ng-show="!showLogin">
-    <button class="btn btn-primary" ng-click="logout()">Logout</button>
+    <table>
+        <tr>
+            <td>
+                <button class="btn btn-primary" ng-click="logout()">Logout</button>
+            </td>
+        </tr>
+    </table>
 </div>
 
 </body>
