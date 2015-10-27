@@ -51,11 +51,6 @@
     </form>
 </div>
 
-<div ng-show="!showLogin">
-    <hr/>
-    <button class="btn btn-primary" ng-click="logout()">Logout</button>
-</div>
-
 <div ng-if="!showLogin" ng-init="getProducts()">
     <br/>
     <form>
@@ -72,6 +67,11 @@
         </li>
         </ul>
     </form>
+</div>
+
+<div ng-show="!showLogin">
+    <hr/>
+    <button class="btn btn-primary" ng-click="logout()">Logout</button>
 </div>
 
 </body>
