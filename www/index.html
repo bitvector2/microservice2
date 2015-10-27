@@ -62,7 +62,7 @@
                     <br>
                 </td>
             </tr>
-            <tr ng-repeat="product in products | product.name">
+            <tr ng-repeat="product in products">
                 <td>
                     <input type="text" ng-model="tmp.rename[product.id]" class="ng-pristine ng-valid"
                            placeholder="{{product.name}}">
