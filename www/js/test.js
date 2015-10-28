@@ -62,7 +62,6 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
 
     $scope.readProducts = function () {
         $scope.error_message = "";
-        $scope.products = "";
 
         $http.get('/products')
             .success(function (data, status) {
