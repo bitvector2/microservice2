@@ -61,7 +61,7 @@
                     </button>
                 </td>
             </tr>
-            <tr ng-repeat="product in products | orderby: 'name'">
+            <tr ng-repeat="product in products | orderBy: 'name'">
                 <td>
                     <input type="text" ng-model="tmp.rename[product.id]" class="ng-pristine ng-valid"
                            placeholder="{{product.name}}">
