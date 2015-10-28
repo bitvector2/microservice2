@@ -54,6 +54,7 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
 
         $http.post('/products', payload)
             .success(function (data, status) {
+                $scope.tmp.newname = "";
                 $scope.readProducts();
             })
             .error(function (data, status) {
