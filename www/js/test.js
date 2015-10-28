@@ -28,7 +28,6 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
         })
             .success(function (data, status) {
                 $window.sessionStorage.setItem('showLogin', 'false');
-                delete $scope.credentials;
             })
             .error(function (data, status) {
                 $scope.error_message = data;
@@ -54,7 +53,6 @@ app.controller('myCtrl', ['$scope', '$rootScope', '$http', '$window', function (
 
         $http.post('/products', payload)
             .success(function (data, status) {
-                $scope.tmp.newname = "";
                 $scope.readProducts();
             })
             .error(function (data, status) {
