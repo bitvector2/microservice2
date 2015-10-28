@@ -10,7 +10,7 @@
 
 <body ng-controller="myCtrl" ng-init="init()">
 
-<h2>CRUD API Starter Kit</h2>
+<h3>CRUD API Starter Kit</h3>
 
 <div ng-if="error_message!=''">
     {{error_message}}
@@ -18,21 +18,17 @@
 
 <div ng-if="showLogin">
     <form>
-        <table>
+        <table class="table table-condensed table-striped">
             <tr>
                 <td>
                     <input type="text" ng-model="credentials.username" class="ng-pristine ng-valid"
                            placeholder="Username">
-                    <br>
-                    <br>
                 </td>
             </tr>
             <tr>
                 <td>
                     <input type="password" ng-model="credentials.password" class="ng-pristine ng-valid"
                            placeholder="Password">
-                    <br>
-                    <br>
                 </td>
             </tr>
             <tr>
