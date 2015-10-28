@@ -12,11 +12,11 @@
 
 <h2>CRUD API Starter Kit</h2>
 
-<div ng-if="error_message!=''">
+<div ng-show="error_message!=''">
     {{error_message}}
 </div>
 
-<div ng-if="showLogin">
+<div ng-show="showLogin">
     <form>
         <table>
             <tr>
@@ -50,7 +50,7 @@
     </form>
 </div>
 
-<div ng-if="!showLogin" ng-init="readProducts()">
+<div ng-show="!showLogin" ng-init="readProducts()">
     <form>
         <table class="table table-condensed table-striped">
             <tr>
@@ -75,7 +75,7 @@
     </form>
 </div>
 
-<div ng-if="!showLogin">
+<div ng-show="!showLogin">
     <table>
         <tr>
             <td>
