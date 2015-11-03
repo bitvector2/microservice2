@@ -29,7 +29,7 @@ dependencies {
     compile "org.postgresql:postgresql:9.4-1204-jdbc42"
     compile "org.scala-lang:scala-library-all:2.11.7"
     compile "org.slf4j:slf4j-api:1.7.12"
-    testCompile "com.jayway.restassured:rest-assured:2.6.0"
+    testCompile "com.jayway.restassured:rest-assured:2.7.0"
     testCompile "junit:junit:4.12"
     testCompile "org.postgresql:postgresql:9.4-1204-jdbc42"
 }
@@ -45,5 +45,5 @@ sourceSets.main.scala.srcDir "src/main/java"
 sourceSets.main.java.srcDirs = []
 
 wrapper {
-    gradleVersion = '2.6'
+    gradleVersion = '2.8'
 }
