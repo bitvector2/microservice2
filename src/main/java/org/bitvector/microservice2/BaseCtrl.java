@@ -52,7 +52,6 @@ public class BaseCtrl {
     }
 
     private void doHealthCheck(HttpServerExchange exchange) {
-        log.info("Health OK");
         exchange.setStatusCode(StatusCodes.OK);
         exchange.getResponseSender().close();
     }
