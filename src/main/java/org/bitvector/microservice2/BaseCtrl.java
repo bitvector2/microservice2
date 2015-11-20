@@ -42,12 +42,19 @@ public class BaseCtrl {
         }
 
         routingHandler = Handlers.routing()
+                .add(Methods.GET, "/healthcheck", exchange -> exchange.dispatch(this::doHealthCheck))
                 .add(Methods.GET, "/logout", exchange -> exchange.dispatch(this::doLogout))
                 .add(Methods.GET, "/login", exchange -> exchange.dispatch(this::doLogin));
     }
 
     public RoutingHandler getRoutingHandler() {
         return routingHandler;
+    }
+
+    private void doHealthCheck(HttpServerExchange exchange) {
+        log.info("Health OK");
+        exchange.setStatusCode(StatusCodes.OK);
+        exchange.getResponseSender().close();
     }
 
     private void doLogin(HttpServerExchange exchange) {
