@@ -45,5 +45,5 @@ sourceSets.main.scala.srcDir "src/main/java"
 sourceSets.main.java.srcDirs = []
 
 wrapper {
-    gradleVersion = '2.12'
+    gradleVersion = '2.11'
 }
